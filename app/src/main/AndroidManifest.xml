@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.naqelexpress.naqelpointer">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.CALL_PHONE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+
+    <!-- <uses-feature android:name="android.hardware.camera" /> -->
+    <!-- <uses-permission android:name="android.permission.CAMERA" /> -->
+
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.FLASHLIGHT" />
+
+    <uses-feature android:name="android.hardware.camera" />
+    <uses-feature android:name="android.hardware.camera.flash" />
+
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme">
+        <meta-data
+            android:name="com.google.android.gms.version"
+            android:value="@integer/google_play_services_version" />
+        <meta-data
+            android:name="com.google.android.gms.vision.DEPENDENCIES"
+            android:value="barcode" />
+
+        <service android:name=".Activity.GoogleMap.GeofenceTransitionService" />
+
+        <activity
+            android:name=".Activity.Login.LoginActivity"
+            android:label="@string/LoginActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".Activity.Booking.BookingPlanActivity"
+            android:label="Booking Details"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".Activity.MainPage.MainPageActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".Activity.Waybill.WaybillPlanActivity"
+            android:label="Waybill Details"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".Activity.Notification.NotificationActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".Activity.Breaks.BreaksActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".Activity.MyRoute.MyRouteActivity"
+            android:label="My Route"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".Activity.Login.SplashScreenActivity"
+            android:screenOrientation="portrait">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".Activity.Login.ForgotPasswordActivity"
+            android:label="@string/ForgotPasswordActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".Activity.MapList.GoogleMapsActivity"
+            android:label="@string/title_activity_google_maps"
+            android:screenOrientation="portrait" />
+
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="@string/google_maps_key" />
+
+        <activity
+            android:name=".Activity.Delivery.DeliveryActivity"
+            android:label="@string/DeliveryActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".Activity.Waybill.ConsigneeAddressTranslationActivity"
+            android:label="@string/ConsigneeAddressTranslationActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".Activity.CheckPoints.CheckPointsActivity"
+            android:label="@string/CheckPointsActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".Activity.MultiDelivery.MultiDeliveryActivity"
+            android:label="@string/MultiDeliveryActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".Activity.NotDelivered.NotDeliveredActivity"
+            android:label="@string/NotDelivered"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".Activity.PickUp.PickUpActivity"
+            android:label="@string/title_activity_pick_up"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".Activity.GoogleMap.ShipmentsMapActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".Activity.ShipmentPicking.ShipmentPickingActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".Activity.ShipmentPicking.ShipmentPickingSelectingDialog"
+            android:label="@string/SelectingShipments"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".Activity.Settings.SettingActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".Activity.DeliverySheet.DeliverySheetActivity"
+            android:label="Delivery Sheet"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".Activity.MyAccount.MyAccountActivity"
+            android:label="My Account"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".Activity.CheckCOD.CODCheckingActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".Activity.DataActivity.ShowDataActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".Activity.PendingMoney.PendingMoneyActivity"
+            android:label="Pending COD"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".Classes.NewBarCodeScanner"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".Classes.BarcodeScan"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".Activity.CheckPoint.CheckPointActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".Activity.WaybillMeasurments.WaybillMeasurementActivity"
+            android:label="@string/WaybillMeasurementActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".Activity.Booking.BookingApproval"
+            android:label="@string/title_activity_booking_approval"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
+    </application>
+
+</manifest>
