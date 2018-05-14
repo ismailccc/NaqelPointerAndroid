@@ -21,6 +21,7 @@ import com.naqelexpress.naqelpointer.Classes.JsonSerializerDeserializer;
 import com.naqelexpress.naqelpointer.Classes.Languages;
 import com.naqelexpress.naqelpointer.Classes.OnUpdateListener;
 import com.naqelexpress.naqelpointer.DB.DBConnections;
+import com.naqelexpress.naqelpointer.DB.DBObjects.Booking;
 import com.naqelexpress.naqelpointer.DB.DBObjects.CheckPointType;
 import com.naqelexpress.naqelpointer.DB.DBObjects.CheckPointTypeDDetail;
 import com.naqelexpress.naqelpointer.DB.DBObjects.CheckPointTypeDetail;
@@ -42,6 +43,7 @@ import java.lang.reflect.Method;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Locale;
+import java.util.Calendar;
 
 public class GlobalVar
 {
@@ -53,7 +55,7 @@ public class GlobalVar
     public boolean ThereIsMandtoryVersion = false;
     public String NaqelPointerAPILink = "http://212.93.160.150/NaqelAPIServices/RouteOptimization/2.0/WCFRouteOptimization.svc/";
     //public String NaqelPointerWebAPILink = "http://212.93.160.150/NaqelAPIServices/InfoTrackWebAPI/1.0/API/";
-    public String NaqelPointerWebAPILink = "https://infotrack.naqelexpress.com/NaqelAPIServices/RouteOptimization/3.2/API/";
+    public String NaqelPointerWebAPILink = "https://infotrack.naqelexpress.com/NaqelAPIServices/RouteOptimization/3.3/API/";
     public int CourierDailyRouteID = 0;
     public String EmployName = "";
     public String EmployMobileNo = "";
@@ -92,7 +94,7 @@ public class GlobalVar
 
     public ArrayList<Languages> LanguageList = new ArrayList<>();
     public ArrayList<String> LanguageNameList = new ArrayList<>();
-
+    public ArrayList<Booking> myBookingList;
     public ArrayList<MyRouteShipments> myRouteShipmentList;
     public ArrayList<CheckPendingCODResult> checkPendingCODList;
     public ArrayList<String> optimizedOutOfDeliveryShipmentList;
@@ -100,8 +102,8 @@ public class GlobalVar
     private void Init()
     {
         GlobalVar.GV().MachineID = GlobalVar.GV().getManufacturerSerialNumber();
-
-//        GlobalVar.GV().myRouteShipmentList = new ArrayList<>();
+        GlobalVar.GV().myBookingList = new ArrayList<Booking>();
+       GlobalVar.GV().myRouteShipmentList = new ArrayList<>();
 //        GlobalVar.GV().checkPendingCODList = new ArrayList<>();
         GlobalVar.GV().NaqelPointerAPILink = "http://212.93.160.150/NaqelAPIServices/RouteOptimization/"+GlobalVar.GV().WebServiceVersion+"/WCFRouteOptimization.svc/";
 //        GlobalVar.GV().DataTypeList.add("Delivery");
@@ -1017,6 +1019,76 @@ public class GlobalVar
         }
     }
 
+
+    public void LoadMyBooking()
+    {
+
+//            Cursor result = dbConnections.Fill("select * from MyRouteShipments Where CourierDailyRouteID = "+ GlobalVar.GV().CourierDailyRouteID + " order by " + orderBy);
+//            if (result.getCount() > 0)
+//            {
+//GlobalVar.GV().myBookingList = new ArrayList<>();
+//
+//        result.moveToFirst();
+//        do
+//        {
+//            Booking mybooking= new Booking();
+//
+//
+//            GlobalVar.GV().myRouteShipmentList.add(mybooking);
+//        }
+//        while (result.moveToNext());
+//
+//            }
+
+            GlobalVar.GV().myBookingList = new ArrayList<>();
+
+
+            Booking mybooking= new Booking();
+            mybooking.ID=201;
+            mybooking.ClientID=87999;
+            mybooking.ClientName="Test client namd";
+            mybooking.RefNo="122412";
+            mybooking.BookingDate=DateTime.now();
+            mybooking.PicesCount=20;
+            mybooking.Weight=45.0;
+            mybooking.OfficeUpTo=DateTime.now();
+            mybooking.PickUpReqDT=DateTime.now();
+            mybooking.SpecialInstruction="Test ing dummy data";
+            mybooking.ContactPerson="Shabbir";
+            mybooking.ContactNumber="+966553724713";
+            mybooking.Address="testtt";
+            mybooking.Latitude = "20.5";
+            mybooking.Longitude = "85.1";
+            mybooking.Status=0;
+            mybooking.Orgin="JED";
+            mybooking.Destination="RUH";
+            mybooking.LoadType="AIR";
+            mybooking.BillType="C";
+            GlobalVar.GV().myBookingList.add(mybooking);
+
+            Booking mybooking1= new Booking();
+            mybooking1.ID=205;
+             mybooking.ClientID=87469;
+            mybooking.ClientName="Test client ytytytytyty";
+            mybooking1.RefNo="erere";
+            mybooking1.BookingDate=DateTime.now();
+            mybooking1.PicesCount=15;
+            mybooking1.Weight=47.0;
+            mybooking1.OfficeUpTo=DateTime.now();
+            mybooking1.PickUpReqDT=DateTime.now();
+            mybooking1.SpecialInstruction="Test ing  data Testing ";
+            mybooking1.ContactPerson="SIRAJ";
+            mybooking1.ContactNumber="+966553724745";
+            mybooking1.Address="tesdfsdfsdf";
+            mybooking1.Latitude = "28.5";
+            mybooking1.Longitude = "84.1";
+            mybooking1.Status=0;
+            mybooking1.Orgin="MMA";
+            mybooking1.Destination="KSD";
+            mybooking1.LoadType="AIR";
+            mybooking1.BillType="A";
+            GlobalVar.GV().myBookingList.add(mybooking1);
+    }
     private void ReOrderMyRouteShipments(boolean CheckComplaintandDeliveryRequest)
     {
         //Has Complaint and Has Delivery Request has high priority.

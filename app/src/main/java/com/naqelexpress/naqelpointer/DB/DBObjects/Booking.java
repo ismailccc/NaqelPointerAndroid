@@ -15,18 +15,26 @@ import org.json.JSONObject;
 public class Booking
 {
     public int ID;
-    public String RefNo;
+    public String RefNo="";
     public int ClientID;
-    public String ClientName;
-    public String ClientFName;
-    public DateTime BookingDate;
+    public String ClientName="";
+    public String ClientFName="";
+    public DateTime BookingDate= DateTime.now();
     public int PicesCount;
     public Double Weight;
-    public String SpecialInstruction;
-    public DateTime OfficeUpTo;
-    public DateTime PickUpReqDT;
-    public String ContactPerson;
-    public String ContactNumber;
+    public String SpecialInstruction="";
+    public DateTime OfficeUpTo= DateTime.now();
+    public DateTime PickUpReqDT= DateTime.now();
+    public String ContactPerson="";
+    public String ContactNumber="";
+    public String Address="";
+    public String Latitude = "";
+    public String Longitude = "";
+    public int Status=0;
+    public String Orgin="";
+    public String Destination="";
+    public String LoadType="";
+    public String BillType="";
 
     public Booking(){}
 

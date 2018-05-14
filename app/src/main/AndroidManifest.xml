@@ -158,9 +158,10 @@
             android:label="@string/WaybillMeasurementActivity"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".Activity.Booking.BookingApproval"
-            android:label="@string/title_activity_booking_approval"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:name=".Activity.Booking.BookingList"
+            android:label="@string/title_activity_booking_list" />
+        <activity android:name=".Activity.Booking.BookingDetailActivity" />
+        <activity android:name=".MainActivity"></activity>
     </application>
 
 </manifest>

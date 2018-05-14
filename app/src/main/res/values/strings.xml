@@ -136,4 +136,7 @@
     <string name="not_delivered">Not Delivered</string>
     <string name="delivered">Delivered</string>
     <string name="title_activity_booking_approval">BookingApproval</string>
+    <string name="title_activity_booking_list">BookingList</string>
+    <string name="pieces">Pieces</string>
+    <string name="title_activity_booking_details">BookingDetails</string>
 </resources>

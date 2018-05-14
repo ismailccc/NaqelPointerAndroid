@@ -17,9 +17,10 @@ import android.widget.AdapterView;
 import android.widget.GridView;
 import android.widget.Toast;
 
-import com.naqelexpress.naqelpointer.Activity.Booking.BookingApproval;
 import com.naqelexpress.naqelpointer.Activity.CheckCOD.CODCheckingActivity;
 import com.naqelexpress.naqelpointer.Activity.CheckPoints.CheckPointsActivity;
+import com.naqelexpress.naqelpointer.Activity.Booking.BookingList;
+import com.naqelexpress.naqelpointer.Activity.Booking.BookingDetailActivity;
 import com.naqelexpress.naqelpointer.Activity.Delivery.DeliveryActivity;
 import com.naqelexpress.naqelpointer.Activity.DeliverySheet.DeliverySheetActivity;
 import com.naqelexpress.naqelpointer.Activity.Login.LoginActivity;
@@ -64,7 +65,9 @@ public class MainPageActivity
             R.drawable.datasync,
             R.drawable.money,
             R.drawable.pendingcod,
-            R.drawable.checkpoint};
+            R.drawable.checkpoint,
+            R.drawable.checkpoint
+    };
     GridView gridView;
     FloatingActionButton btnSignOut;
     public DataSync dataSync;
@@ -82,7 +85,7 @@ public class MainPageActivity
         setContentView(R.layout.mainpage);
         GlobalVar.GV().rootViewMainPage = mainRootView = findViewById(android.R.id.content);
 
-        cellTitle = new String[12];
+        cellTitle = new String[13];
         cellTitle[0] = getResources().getString(R.string.DeliverySheetActivity);
         cellTitle[1] = getResources().getString(R.string.MyRouteActivity);
         cellTitle[2] = getResources().getString(R.string.DeliveryActivity);
@@ -95,7 +98,7 @@ public class MainPageActivity
         cellTitle[9] = getResources().getString(R.string.CODChecking);
         cellTitle[10] = getResources().getString(R.string.PendingCOD);
         cellTitle[11] = getResources().getString(R.string.CustomsClearance);
-
+        cellTitle[12] = getResources().getString(R.string.CustomsClearance);
         MainPageNavigation();
 
         GlobalVar.GV().context = this;
@@ -165,7 +168,7 @@ public class MainPageActivity
                 handler.post(new Runnable() {
                     public void run() {
                         try {
-                            LoadNotification();
+                            //LoadNotification();
                         } catch (Exception e) {
                             Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_SHORT)
                                     .show();
@@ -215,7 +218,7 @@ public class MainPageActivity
         try{
             noti = new NotificationHelper(this);
             Notification.Builder nb = noti.getNotification1("dfsdfsdf", "Test Notification");
-            Intent intent = new Intent(this, BookingApproval.class);
+            Intent intent = new Intent(this, BookingDetailActivity.class);
 
             Bundle bundle = new Bundle();
             bundle.putString("ID", String.valueOf(25455));
@@ -234,6 +237,8 @@ public class MainPageActivity
                     .show();
         }
     }
+
+
 
     public void MainPageNavigation()
     {
@@ -300,6 +305,10 @@ public class MainPageActivity
                     case 11:
                         Intent checkPoint = new Intent(getApplicationContext(),CheckPointsActivity.class);
                         startActivity(checkPoint);
+                        break;
+                    case 12:
+                        Intent bookingList = new Intent(getApplicationContext(),BookingList.class);
+                        startActivity(bookingList);
                         break;
                 }
             }
