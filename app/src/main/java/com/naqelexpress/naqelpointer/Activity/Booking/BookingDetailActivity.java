@@ -166,7 +166,15 @@ public class BookingDetailActivity extends MainActivity
 //        intent.putExtra("WaybillNo",60038400);
         startActivity(intent);
     }
+    public void AcceptClick(View view)
+    {
 
+    }
+
+    public void RejectClick(View view)
+    {
+
+    }
     @Override
     public void onMapReady(GoogleMap googleMap)
     {
@@ -196,13 +204,5 @@ public class BookingDetailActivity extends MainActivity
 //        ShowShipmentMarker();
     }
 
-//    private void ShowShipmentMarker()
-//    {
-////        LatLng latLng = new LatLng(24.730439, 46.821037);
-////        BitmapDescriptor icon = BitmapDescriptorFactory.fromResource(R.drawable.pickupmarker);
-////        Marker marker = mMap.addMarker(new MarkerOptions()
-////                .position(latLng)
-////                .icon(icon)
-////                .title("1708135010116"));
-//    }
+
 }

@@ -7,6 +7,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.view.View;
 
+import com.naqelexpress.naqelpointer.DB.DBObjects.Booking;
 import com.naqelexpress.naqelpointer.DB.DBObjects.CheckPoint;
 import com.naqelexpress.naqelpointer.DB.DBObjects.CheckPointBarCodeDetails;
 import com.naqelexpress.naqelpointer.DB.DBObjects.CheckPointType;
@@ -1285,6 +1286,56 @@ public class DBConnections
         catch (Exception e)
         {
             GlobalVar.GV().ShowSnackbar(rootView,e.getMessage(), GlobalVar.AlertType.Error);
+            return false;
+        }
+        db.close();
+        return true;
+    }
+
+
+    //--------------------------------- Booking Table ----------------------------------
+    public boolean InsertBooking(Booking instance)
+    {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues contentValues = new ContentValues();
+        contentValues.put("ID",instance.ID);
+        contentValues.put("RefNo",instance.RefNo);
+        contentValues.put("ClientID",instance.ClientID);
+        contentValues.put("ClientName",instance.ClientName);
+        contentValues.put("ClientFName",instance.ClientFName);
+        contentValues.put("BookingDate",String.valueOf(instance.BookingDate));
+        contentValues.put("PicesCount",instance.PicesCount);
+        contentValues.put("Weight",instance.Weight);
+        contentValues.put("SpecialInstruction",instance.SpecialInstruction);
+        contentValues.put("OfficeUpTo",instance.OfficeUpTo.toString("HH:mm"));
+        contentValues.put("PickUpReqDT",instance.PickUpReqDT.toString("HH:mm"));
+        contentValues.put("ContactPerson",instance.PicesCount);
+        contentValues.put("ContactNumber",instance.Weight);
+        contentValues.put("Address",instance.Address);
+        contentValues.put("Latitude",instance.Latitude);
+        contentValues.put("Longitude",instance.Longitude);
+        contentValues.put("Status",instance.Status);
+        contentValues.put("Orgin",instance.Orgin);
+        contentValues.put("Destination",instance.Destination);
+        contentValues.put("LoadType",instance.LoadType);
+        contentValues.put("BillType",instance.BillType);
+        contentValues.put("EmployID",instance.EmployeeId);
+
+
+        Long result = db.insert("Booking", null, contentValues);
+        db.close();
+        return result != -1;
+    }
+    public boolean UpdateBookingStatus(int Id,int StatusId) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues contentValues = new ContentValues();
+        contentValues.put("Status", StatusId);
+
+        try {
+            String args[] = {String.valueOf(Id)};
+            db.update("Booking", contentValues, "ID=?", args);
+        } catch (Exception e) {
+            GlobalVar.GV().ShowSnackbar(rootView, e.getMessage(), GlobalVar.AlertType.Error);
             return false;
         }
         db.close();

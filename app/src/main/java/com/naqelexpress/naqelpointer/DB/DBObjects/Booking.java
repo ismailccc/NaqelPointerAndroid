@@ -35,7 +35,7 @@ public class Booking
     public String Destination="";
     public String LoadType="";
     public String BillType="";
-
+    public int EmployeeId=0;
     public Booking(){}
 
     public View rootView;

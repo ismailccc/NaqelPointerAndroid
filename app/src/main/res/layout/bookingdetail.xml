@@ -449,26 +449,52 @@
             android:id="@+id/btnCallFirst"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="8dp"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="8dp"
-            android:background="@drawable/round"
-            android:onClick="CallConsignee"
-            android:text="Call"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            tools:ignore="HardcodedText,RtlHardcoded" />
-
-        <Button
-            android:id="@+id/btnDelivered"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="150dp"
+            android:layout_marginStart="4dp"
             android:layout_marginTop="8dp"
             android:background="@drawable/round"
             android:onClick="Delivered"
             android:text="PickUp"
-            app:layout_constraintLeft_toRightOf="@+id/btnCallFirst"
+            app:layout_constraintStart_toEndOf="@+id/btnCallFirst2"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:ignore="HardcodedText,RtlHardcoded" />
+
+
+        <Button
+            android:id="@+id/btnCallFirst2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/round"
+            android:onClick="CallConsignee"
+            android:text="Call"
+            app:layout_constraintStart_toEndOf="@+id/btnReject"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:ignore="HardcodedText,RtlHardcoded" />
+
+        <Button
+            android:id="@+id/btnAccept"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/round"
+            android:onClick="AcceptClick"
+            android:text="Accept"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:ignore="HardcodedText,RtlHardcoded" />
+
+        <Button
+            android:id="@+id/btnReject"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/round"
+            android:onClick="RejectClick"
+            android:text="Reject"
+            app:layout_constraintStart_toEndOf="@+id/btnAccept"
             app:layout_constraintTop_toTopOf="parent"
             tools:ignore="HardcodedText,RtlHardcoded" />
 
