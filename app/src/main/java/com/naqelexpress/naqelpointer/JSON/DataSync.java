@@ -4,6 +4,7 @@ import android.app.ProgressDialog;
 import android.database.Cursor;
 import android.os.AsyncTask;
 import com.naqelexpress.naqelpointer.Classes.OnUpdateListener;
+import com.naqelexpress.naqelpointer.DB.DBObjects.Booking;
 import com.naqelexpress.naqelpointer.DB.DBObjects.CheckPoint;
 import com.naqelexpress.naqelpointer.DB.DBObjects.CheckPointBarCodeDetails;
 import com.naqelexpress.naqelpointer.DB.DBObjects.CheckPointWaybillDetails;
@@ -1103,6 +1104,40 @@ public class DataSync
 //            while (result.moveToNext());
 //        }
     }
+
+
+
+    public void GetBookingListSerer()
+    {
+        if (!GlobalVar.GV().HasInternetAccess)
+            return;
+
+        DataTableParameters dataTableParameters = new DataTableParameters();
+        dataTableParameters.AppID = GlobalVar.GV().AppID;
+        dataTableParameters.FilterString = "ID > 0 and CourierID = " + GlobalVar.GV().EmployID;
+        dataTableParameters.Length = 50;
+        dataTableParameters.Source = "ViwBooking";
+        dataTableParameters.Start = 0;
+
+        String jsonData = JsonSerializerDeserializer.serialize(dataTableParameters, true);
+        ProjectAsyncTask task = new ProjectAsyncTask("View/GetData", "Post",jsonData);
+        task.setUpdateListener(new OnUpdateListener()
+        {
+            public void onPostExecuteUpdate(String obj)
+            {
+                new Booking(obj,GlobalVar.GV().rootViewMainPage);
+            }
+
+            public void onPreExecuteUpdate()
+            {
+                GlobalVar.GV().ShowSnackbar(GlobalVar.GV().rootView, "Loading Online Booking", GlobalVar.AlertType.Info);
+            }
+        });
+        task.execute();
+
+
+    }
+
 
     //-------------Sending Multi Delivery Data to the Server -------------------
     public void SendWaybillMeasurementDataData()

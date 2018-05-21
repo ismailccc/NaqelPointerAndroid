@@ -37,7 +37,7 @@ public class BookingList extends MainActivity {
             mapListview = (SwipeMenuListView) findViewById(R.id.myBookingListView);
 
 
-            checkCourierDailyBookingList(false);
+            GetBookingList();
 
 
             adapter = new BookingListAdapter(getApplicationContext(), GlobalVar.GV().myBookingList);
@@ -115,11 +115,12 @@ public class BookingList extends MainActivity {
 
     }
 
-    private void checkCourierDailyBookingList(boolean CreateNewRoute)
+    private void GetBookingList()
     {
+        GlobalVar.GV().LoadMyBooking();
+             //GlobalVar.GV().LoadMyBookingList("BookingDate",true);
 
-            //GlobalVar.GV().CourierDailyRouteID = GlobalVar.GV().dbConnections.getMaxID("CourierDailyRoute Where EmployID = " + GlobalVar.GV().EmployID + " and EndTime is NULL ");
-            GlobalVar.GV().LoadMyBooking();
+
 
     }
 

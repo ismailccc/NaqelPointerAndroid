@@ -33,6 +33,8 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.ParseException;
+import com.naqelexpress.naqelpointer.JSON.ProjectAsyncTask;
+import com.naqelexpress.naqelpointer.Classes.JsonSerializerDeserializer;
 
 public class LoginActivity
         extends MainActivity
@@ -271,11 +273,32 @@ public class LoginActivity
             GlobalVar.GV().ShowDialog(context,"New Version","There is a new version, Please update the system, or cordiante with IT department for updating your system.",true);
         else
         {
+            SetDeviceId();
             Intent intent = new Intent(getApplicationContext(), MainPageActivity.class);
             startActivity(intent);
 
             finish();
         }
+    }
+    class Optimization
+    {
+        public String EmployID;
+        public String DeviceId;
+    }
+    private void SetDeviceId() {
+        String DeviceId="XXXX";
+        //To Do from FCM
+
+        Optimization optimization = new Optimization();
+
+        optimization.EmployID = String.valueOf(GlobalVar.GV().EmployID);
+        optimization.DeviceId = DeviceId;
+
+        String jsonData = JsonSerializerDeserializer.serialize(optimization, true);
+        ProjectAsyncTask task = new ProjectAsyncTask("Optimize", "Post",jsonData,"http://35.188.10.142/NaqelRouteApi/api/");
+        task.execute();
+
+
     }
 
     @Override

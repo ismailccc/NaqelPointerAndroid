@@ -28,6 +28,7 @@
     <string name="CODChecking">Check COD</string>
     <string name="PendingCOD">Pending COD</string>
     <string name="CustomsClearance">Customs Clearance</string>
+    <string name="BookingList">Booking List</string>
     <string name="PickUpActivity">PickUp</string>
     <string name="WaybillMeasurementActivity">Measurement</string>
     <string name="DeliveryFirstFragment">Waybill Details</string>

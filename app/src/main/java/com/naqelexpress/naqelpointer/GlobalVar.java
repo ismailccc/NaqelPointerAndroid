@@ -803,6 +803,10 @@ public class GlobalVar
         }
     }
 
+
+
+
+
     private int LastBringMasterData()
     {
         int value = 1;
@@ -906,6 +910,7 @@ public class GlobalVar
             dataSync.SendMultiDeliveryData();
             dataSync.SendWaybillMeasurementDataData();
             dataSync.SendCheckPointData();
+
             GlobalVar.GV().ShowSnackbar(view,"Syncing Finish Successfully", GlobalVar.AlertType.Info);
         }
         else
@@ -1018,7 +1023,55 @@ public class GlobalVar
             }
         }
     }
+    public void LoadMyBookingList(String orderBy,boolean isFromServer)
+    {
 
+        GlobalVar.GV().myBookingList = new ArrayList<Booking>();
+
+        if(isFromServer)
+        {
+            DataSync dataSync = new DataSync();
+            dataSync.GetBookingListSerer();
+        }
+        else {
+
+            Cursor result = dbConnections.Fill("select * from Booking Where EmployID = " + GlobalVar.GV().EmployID + " order by " + orderBy);
+            if (result.getCount() > 0) {
+                GlobalVar.GV().myBookingList = new ArrayList<Booking>();
+
+                result.moveToFirst();
+                do {
+                    Booking myBooking = new Booking();
+                    myBooking.ID = Integer.parseInt(result.getString(result.getColumnIndex("ID")));
+                    myBooking.RefNo = result.getString(result.getColumnIndex("RefNo"));
+                    myBooking.ClientID = Integer.parseInt(result.getString(result.getColumnIndex("ClientID")));
+                    myBooking.ClientName = result.getString(result.getColumnIndex("ClientName"));
+                    myBooking.BookingDate = DateTime.parse(result.getString(result.getColumnIndex("BookingDate")));
+                    myBooking.PicesCount = Integer.parseInt(result.getString(result.getColumnIndex("PicesCount")));
+                    myBooking.Weight = Double.parseDouble(result.getString(result.getColumnIndex("Weight")));
+                    myBooking.SpecialInstruction = result.getString(result.getColumnIndex("SpecialInstruction"));
+                    myBooking.OfficeUpTo = DateTime.parse(result.getString(result.getColumnIndex("OfficeUpTo")));
+                    myBooking.PickUpReqDT = DateTime.parse(result.getString(result.getColumnIndex("PickUpReqDT")));
+                    myBooking.ContactPerson = result.getString(result.getColumnIndex("ContactPerson"));
+                    myBooking.ContactNumber = result.getString(result.getColumnIndex("ContactNumber"));
+                    myBooking.Address = result.getString(result.getColumnIndex("Address"));
+                    myBooking.Latitude = result.getString(result.getColumnIndex("Latitude"));
+                    myBooking.Longitude = result.getString(result.getColumnIndex("Longitude"));
+                    myBooking.Status = Integer.parseInt(result.getString(result.getColumnIndex("Status")));
+                    myBooking.Orgin = result.getString(result.getColumnIndex("Orgin"));
+                    myBooking.Destination = result.getString(result.getColumnIndex("Destination"));
+                    myBooking.LoadType = result.getString(result.getColumnIndex("LoadType"));
+                    myBooking.BillType = result.getString(result.getColumnIndex("BillType"));
+                    myBooking.EmployeeId = Integer.parseInt(result.getString(result.getColumnIndex("EmployeeId")));
+
+                    GlobalVar.GV().myBookingList.add(myBooking);
+                }
+                while (result.moveToNext());
+            }
+
+
+        }
+    }
 
     public void LoadMyBooking()
     {

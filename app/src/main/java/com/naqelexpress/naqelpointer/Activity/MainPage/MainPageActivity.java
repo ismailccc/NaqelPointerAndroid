@@ -98,7 +98,7 @@ public class MainPageActivity
         cellTitle[9] = getResources().getString(R.string.CODChecking);
         cellTitle[10] = getResources().getString(R.string.PendingCOD);
         cellTitle[11] = getResources().getString(R.string.CustomsClearance);
-        cellTitle[12] = getResources().getString(R.string.CustomsClearance);
+        cellTitle[12] = getResources().getString(R.string.BookingList);
         MainPageNavigation();
 
         GlobalVar.GV().context = this;
@@ -155,29 +155,32 @@ public class MainPageActivity
 
                 if (GlobalVar.GV().NoNeedVolumeReasonList.size() <= 0)
                     GlobalVar.GV().GetNoNeedVolumeReasonList(true);
+
+                if (GlobalVar.GV().myBookingList.size() <= 0)
+                    GlobalVar.GV().LoadMyBookingList("BookingDate",true);
             }
         };
         loadMasterDataThread.start();
 
 
-        final Handler handler = new Handler();
-        Timer timer = new Timer();
-        TimerTask doAsynchronousTask = new TimerTask() {
-            @Override
-            public void run() {
-                handler.post(new Runnable() {
-                    public void run() {
-                        try {
-                            //LoadNotification();
-                        } catch (Exception e) {
-                            Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_SHORT)
-                                    .show();
-                        }
-                    }
-                });
-            }
-        };
-        timer.schedule(doAsynchronousTask, 0, 50000);
+//        final Handler handler = new Handler();
+//        Timer timer = new Timer();
+//        TimerTask doAsynchronousTask = new TimerTask() {
+//            @Override
+//            public void run() {
+//                handler.post(new Runnable() {
+//                    public void run() {
+//                        try {
+//                            //LoadNotification();
+//                        } catch (Exception e) {
+//                            Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_SHORT)
+//                                    .show();
+//                        }
+//                    }
+//                });
+//            }
+//        };
+//        timer.schedule(doAsynchronousTask, 0, 50000);
     }
 
     private void LoadUserSettings()

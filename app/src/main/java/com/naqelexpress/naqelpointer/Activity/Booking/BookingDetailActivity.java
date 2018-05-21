@@ -18,6 +18,7 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.naqelexpress.naqelpointer.Classes.ConsingeeMobileSpinnerDialog;
 import com.naqelexpress.naqelpointer.Classes.MainActivity;
+import com.naqelexpress.naqelpointer.DB.DBConnections;
 import com.naqelexpress.naqelpointer.DB.DBObjects.Booking;
 import com.naqelexpress.naqelpointer.GlobalVar;
 import com.naqelexpress.naqelpointer.R;
@@ -37,7 +38,7 @@ public class BookingDetailActivity extends MainActivity
     double Longitude = 0;
     LatLng latLng;
     private Bundle bundle;
-
+    private int BookingId;
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -79,6 +80,7 @@ public class BookingDetailActivity extends MainActivity
 
                 if (GlobalVar.GV().myBookingList.get(i).ID == Integer.parseInt(bundle.getString("ID")) )
                 {
+                    BookingId=GlobalVar.GV().myBookingList.get(i).ID;
                     myBooking = GlobalVar.GV().myBookingList.get(i);
                     txtReferenceNo.setText(myBooking.RefNo);
                     txtClientId.setText(String.valueOf(myBooking.ClientID));
@@ -162,18 +164,25 @@ public class BookingDetailActivity extends MainActivity
 
     public void Delivered(View view)
     {
-        Intent intent = new Intent( this, com.naqelexpress.naqelpointer.Activity.Delivery.DeliveryActivity.class );
-//        intent.putExtra("WaybillNo",60038400);
-        startActivity(intent);
+        //Status is Pickup
+        DBConnections dbConnections = new DBConnections(GlobalVar.GV().context,GlobalVar.GV().rootView);
+        dbConnections.UpdateBookingStatus(BookingId,3) ;
+        //To do need to call API
     }
     public void AcceptClick(View view)
     {
-
+        //Status is Accepted
+        DBConnections dbConnections = new DBConnections(GlobalVar.GV().context,GlobalVar.GV().rootView);
+         dbConnections.UpdateBookingStatus(BookingId,1) ;
+        // To Do need to call API to Update status in server
     }
 
     public void RejectClick(View view)
     {
-
+        //Status is Rejected
+        DBConnections dbConnections = new DBConnections(GlobalVar.GV().context,GlobalVar.GV().rootView);
+        dbConnections.UpdateBookingStatus(BookingId,2) ;
+        // To Do need to call API to Update status in server
     }
     @Override
     public void onMapReady(GoogleMap googleMap)
