@@ -1106,6 +1106,7 @@ public class GlobalVar {
                             sp.setLatitude(1);
                             sp.setLongitude(1);
                         }
+
                         //Places places = new Places(position, latlong);
                         MyRouteActivity.places.add(sp);
                     }
