@@ -1097,11 +1097,15 @@ public class GlobalVar {
                     myRouteShipments.Longitude = result.getString(result.getColumnIndex("Longitude"));
                     if ((myRouteShipments.Latitude.length() > 0 && myRouteShipments.Longitude.length() > 0) &&
                             !myRouteShipments.Latitude.equals("null") && !myRouteShipments.Longitude.equals("null")) {
-
                         Location sp = new Location("");
-                        sp.setLatitude(Double.parseDouble(myRouteShipments.Latitude));
-                        sp.setLongitude(Double.parseDouble(myRouteShipments.Longitude));
+                        try {
 
+                            sp.setLatitude(Double.parseDouble(myRouteShipments.Latitude));
+                            sp.setLongitude(Double.parseDouble(myRouteShipments.Longitude));
+                        } catch (Exception e) {
+                            sp.setLatitude(0);
+                            sp.setLongitude(0);
+                        }
                         //Places places = new Places(position, latlong);
                         MyRouteActivity.places.add(sp);
                     }
