@@ -592,8 +592,8 @@ public class GlobalVar {
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
-
-                dialog.dismiss();
+                if (dialog != null && dialog.isShowing())
+                    dialog.dismiss();
             }
 
             public void onPreExecuteUpdate() {
@@ -954,18 +954,23 @@ public class GlobalVar {
     }
 
     public void makeCall(String MobileNo, View view, Activity activity) {
-        if (MobileNo == "0") {
-            GlobalVar.GV().ShowSnackbar(view, "Invalid Contact Number", GlobalVar.AlertType.Error);
-            return;
-        }
+        try {
+            if (MobileNo == "0") {
+                GlobalVar.GV().ShowSnackbar(view, "Invalid Contact Number", GlobalVar.AlertType.Error);
+                return;
+            }
 
-        Intent intent = new Intent(Intent.ACTION_CALL);
-        intent.setData(Uri.parse("tel:" + MobileNo));
-        if (!GlobalVar.GV().checkPermission(activity, PermissionType.Phone)) {
-            GlobalVar.GV().ShowSnackbar(view, activity.getString(R.string.NeedPhonePermission), GlobalVar.AlertType.Error);
-            GlobalVar.GV().askPermission(activity, PermissionType.Phone);
-        } else
-            activity.getApplicationContext().startActivity(intent);
+            Intent intent = new Intent(Intent.ACTION_CALL);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            intent.setData(Uri.parse("tel:" + MobileNo));
+            if (!GlobalVar.GV().checkPermission(activity, PermissionType.Phone)) {
+                GlobalVar.GV().ShowSnackbar(view, activity.getString(R.string.NeedPhonePermission), GlobalVar.AlertType.Error);
+                GlobalVar.GV().askPermission(activity, PermissionType.Phone);
+            } else
+                activity.getApplicationContext().startActivity(intent);
+        } catch (Exception e) {
+
+        }
     }
 
     public void ChangeMapSettings(GoogleMap mMap, Activity activity, View view) {

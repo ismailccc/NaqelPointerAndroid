@@ -22,6 +22,9 @@ import com.naqelexpress.naqelpointer.R;
 
 import org.joda.time.DateTime;
 
+import java.text.NumberFormat;
+import java.util.Locale;
+
 public class SplashScreenActivity
         extends AppCompatActivity {
     @Override
@@ -31,7 +34,12 @@ public class SplashScreenActivity
         setContentView(R.layout.splashscreen);
 
         //String token = FirebaseInstanceId.getInstance().getToken();
+        try {
 
+            System.out.println("");
+        } catch (Exception e) {
+            System.out.println(e);
+        }
         DBConnections dbConnections = new DBConnections(getApplicationContext(), null);
         //dbConnections.deleteAllMeasurement();
 //        dbConnections.deleteAllOrigin();

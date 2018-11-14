@@ -319,8 +319,13 @@ public class WaybillPlanActivity extends AppCompatActivity
         outState.putString("EmployMobileNo", GlobalVar.GV().EmployMobileNo);
         outState.putString("EmployName", GlobalVar.GV().EmployName);
         outState.putString("EmployStation", GlobalVar.GV().EmployStation);
-        outState.putParcelable("currentSettings", GlobalVar.GV().currentSettings);
-        outState.putInt("currentSettingsID", GlobalVar.GV().currentSettings.ID);
+        try {
+            outState.putInt("currentSettingsID", GlobalVar.GV().currentSettings.ID);
+            outState.putParcelable("currentSettings", GlobalVar.GV().currentSettings);
+
+        } catch (Exception e) {
+
+        }
 
     }
 

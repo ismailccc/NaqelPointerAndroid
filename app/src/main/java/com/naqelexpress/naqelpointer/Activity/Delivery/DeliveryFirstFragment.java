@@ -38,7 +38,10 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.text.NumberFormat;
+import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Locale;
 
 import static android.app.Activity.RESULT_OK;
 import static android.content.Context.TELEPHONY_SERVICE;
@@ -201,7 +204,13 @@ public class DeliveryFirstFragment
 
                         GlobalVar.hideKeyboardFrom(getContext(), rootView);
                         GetWaybillDetailsRequest getWaybillDetailsRequest = new GetWaybillDetailsRequest();
-                        getWaybillDetailsRequest.WaybillNo = Integer.parseInt(txtWaybillNo.getText().toString());
+                        NumberFormat nf = NumberFormat.getInstance(Locale.ENGLISH);
+                        try {
+                            getWaybillDetailsRequest.WaybillNo = Integer.parseInt(String.valueOf(nf.parse(txtWaybillNo.getText().toString())));
+
+                        } catch (ParseException e) {
+                            e.printStackTrace();
+                        }
 
                         JSONObject jsonObject = new JSONObject();
                         try {
