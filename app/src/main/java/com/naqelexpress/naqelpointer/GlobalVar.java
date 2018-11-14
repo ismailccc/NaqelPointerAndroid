@@ -1099,7 +1099,6 @@ public class GlobalVar {
                             !myRouteShipments.Latitude.equals("null") && !myRouteShipments.Longitude.equals("null")) {
                         Location sp = new Location("");
                         try {
-
                             sp.setLatitude(Double.parseDouble(myRouteShipments.Latitude));
                             sp.setLongitude(Double.parseDouble(myRouteShipments.Longitude));
                         } catch (Exception e) {
