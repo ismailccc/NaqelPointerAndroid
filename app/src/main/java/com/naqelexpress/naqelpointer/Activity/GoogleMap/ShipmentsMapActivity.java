@@ -15,6 +15,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AppCompatActivity;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -52,14 +53,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ShipmentsMapActivity
-        extends com.naqelexpress.naqelpointer.Classes.MainActivity
+        extends AppCompatActivity
         implements OnMapReadyCallback,
         DirectionFinderListener,
         GoogleMap.OnMarkerClickListener,
         GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener,
-        ResultCallback<Status>
-{
+        ResultCallback<Status> {
     private GoogleMap mMap;
     private FusedLocationProviderClient mFusedLocationClient;
     double Latitude = 0;
@@ -82,22 +82,20 @@ public class ShipmentsMapActivity
     private Location lastLocation;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState)
-    {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.shipmentsmap);
-        GlobalVar.GV().context = this;
+
+
 //        GlobalVar.GV().makeCall("0596988144");
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
         UpdateCurrentLocation();
 
-        android.location.LocationListener locationListener = new android.location.LocationListener()
-        {
+        android.location.LocationListener locationListener = new android.location.LocationListener() {
             @Override
-            public void onLocationChanged(Location location)
-            {
+            public void onLocationChanged(Location location) {
                 if (now != null)
                     now.remove();
 
@@ -115,24 +113,25 @@ public class ShipmentsMapActivity
             }
 
             @Override
-            public void onStatusChanged(String provider, int status, Bundle extras)           {            }
+            public void onStatusChanged(String provider, int status, Bundle extras) {
+            }
 
             @Override
-            public void onProviderEnabled(String provider)             {            }
+            public void onProviderEnabled(String provider) {
+            }
 
             @Override
-            public void onProviderDisabled(String provider) {            }
+            public void onProviderDisabled(String provider) {
+            }
         };
 
         LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        if (GlobalVar.GV().checkPermission(GlobalVar.GV().activity, GlobalVar.PermissionType.Camera) == false)
-        {
-            GlobalVar.GV().ShowSnackbar(mainRootView, getString(R.string.NeedCameraPermission), GlobalVar.AlertType.Error);
-            GlobalVar.GV().askPermission(GlobalVar.GV().activity, GlobalVar.PermissionType.Camera);
-        }
-        else
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,500,1,locationListener);
-        if(!ServicesOK())
+        if (GlobalVar.GV().checkPermission(ShipmentsMapActivity.this, GlobalVar.PermissionType.Camera) == false) {
+            GlobalVar.GV().ShowSnackbar(getWindow().getDecorView().getRootView(), getString(R.string.NeedCameraPermission), GlobalVar.AlertType.Error);
+            GlobalVar.GV().askPermission(ShipmentsMapActivity.this, GlobalVar.PermissionType.Camera);
+        } else
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 500, 1, locationListener);
+        if (!ServicesOK())
             finish();
 
 //        geofenceTransitionService = new GeofenceTransitionService();
@@ -143,14 +142,12 @@ public class ShipmentsMapActivity
     }
 
     // Create GoogleApiClient instance
-    private void createGoogleApi()
-    {
-        if ( googleApiClient == null )
-        {
-            googleApiClient = new GoogleApiClient.Builder( this )
-                    .addConnectionCallbacks( this )
-                    .addOnConnectionFailedListener( this )
-                    .addApi( LocationServices.API )
+    private void createGoogleApi() {
+        if (googleApiClient == null) {
+            googleApiClient = new GoogleApiClient.Builder(this)
+                    .addConnectionCallbacks(this)
+                    .addOnConnectionFailedListener(this)
+                    .addApi(LocationServices.API)
                     .build();
         }
     }
@@ -164,49 +161,39 @@ public class ShipmentsMapActivity
     }
 
     @Override
-    protected void onStop()
-    {
+    protected void onStop() {
         super.onStop();
 
         // Disconnect GoogleApiClient when stopping Activity
         googleApiClient.disconnect();
     }
 
-    private boolean ServicesOK()
-    {
+    private boolean ServicesOK() {
         int isAvailable = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(this);
         if (isAvailable == ConnectionResult.SUCCESS)
             return true;
-        else
-            if (GoogleApiAvailability.getInstance().isUserResolvableError(isAvailable))
-            {
-                Dialog dialog = GoogleApiAvailability.getInstance().getErrorDialog(this,isAvailable,9001);
-                dialog.show();
-            }
-            else
-                Toast.makeText(this,"Can't connect to mapping service.",Toast.LENGTH_LONG).show();
+        else if (GoogleApiAvailability.getInstance().isUserResolvableError(isAvailable)) {
+            Dialog dialog = GoogleApiAvailability.getInstance().getErrorDialog(this, isAvailable, 9001);
+            dialog.show();
+        } else
+            Toast.makeText(this, "Can't connect to mapping service.", Toast.LENGTH_LONG).show();
 
         return false;
     }
 
-    private void DrawPath()
-    {
-        String myLocation =  Latitude + "," + Longitude; //GlobalVar.GV().itemList.get(0).Latitude +"," + GlobalVar.GV().itemList.get(0).Longitude;
-        String myDestination = GlobalVar.GV().myRouteShipmentList.get(GlobalVar.GV().myRouteShipmentList.size() - 1).Latitude +"," + GlobalVar.GV().myRouteShipmentList.get(GlobalVar.GV().myRouteShipmentList.size() - 1).Longitude;
+    private void DrawPath() {
+        String myLocation = Latitude + "," + Longitude; //GlobalVar.GV().itemList.get(0).Latitude +"," + GlobalVar.GV().itemList.get(0).Longitude;
+        String myDestination = GlobalVar.GV().myRouteShipmentList.get(GlobalVar.GV().myRouteShipmentList.size() - 1).Latitude + "," + GlobalVar.GV().myRouteShipmentList.get(GlobalVar.GV().myRouteShipmentList.size() - 1).Longitude;
 
-        try
-        {
-            new DirectionFinder(this,myLocation,myDestination,GlobalVar.GV().myRouteShipmentList).execute();
-        }
-        catch (UnsupportedEncodingException e)
-        {
+        try {
+            new DirectionFinder(this, myLocation, myDestination, GlobalVar.GV().myRouteShipmentList).execute();
+        } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
     }
 
     @Override
-    public void onMapReady(GoogleMap googleMap)
-    {
+    public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
 //        mMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener()
@@ -265,47 +252,37 @@ public class ShipmentsMapActivity
         mMap.getUiSettings().setTiltGesturesEnabled(true);
         mMap.getUiSettings().setRotateGesturesEnabled(true);
 
-        if (GlobalVar.GV().checkPermission(GlobalVar.GV().activity, GlobalVar.PermissionType.Camera) == false)
-        {
-            GlobalVar.GV().ShowSnackbar(mainRootView, getString(R.string.NeedCameraPermission), GlobalVar.AlertType.Error);
-            GlobalVar.GV().askPermission(GlobalVar.GV().activity, GlobalVar.PermissionType.Camera);
-        }
-        else
+        if (GlobalVar.GV().checkPermission(ShipmentsMapActivity.this, GlobalVar.PermissionType.Camera) == false) {
+            GlobalVar.GV().ShowSnackbar(getWindow().getDecorView().getRootView(), getString(R.string.NeedCameraPermission), GlobalVar.AlertType.Error);
+            GlobalVar.GV().askPermission(ShipmentsMapActivity.this, GlobalVar.PermissionType.Camera);
+        } else
             mMap.setMyLocationEnabled(true);
         ShowShipmentsMarker();
     }
 
-    private void UpdateCurrentLocation()
-    {
+    private void UpdateCurrentLocation() {
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-        if (GlobalVar.GV().checkPermission(GlobalVar.GV().activity, GlobalVar.PermissionType.Camera) == false)
-        {
-            GlobalVar.GV().ShowSnackbar(mainRootView, getString(R.string.NeedCameraPermission), GlobalVar.AlertType.Error);
-            GlobalVar.GV().askPermission(GlobalVar.GV().activity, GlobalVar.PermissionType.Camera);
-        }
-        else
-            mFusedLocationClient.getLastLocation().addOnSuccessListener(this, new OnSuccessListener<Location>()
-        {
-            @Override
-            public void onSuccess(Location location)
-            {
-                if (location != null)
-                {
-                    Latitude = location.getLatitude();
-                    Longitude = location.getLongitude();
-                    DrawPath();
-                    LatLng myHome = new LatLng(Latitude,Longitude);
-                    mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(myHome,14));
+        if (GlobalVar.GV().checkPermission(ShipmentsMapActivity.this, GlobalVar.PermissionType.Camera) == false) {
+            GlobalVar.GV().ShowSnackbar(getWindow().getDecorView().getRootView(), getString(R.string.NeedCameraPermission), GlobalVar.AlertType.Error);
+            GlobalVar.GV().askPermission(ShipmentsMapActivity.this, GlobalVar.PermissionType.Camera);
+        } else
+            mFusedLocationClient.getLastLocation().addOnSuccessListener(this, new OnSuccessListener<Location>() {
+                @Override
+                public void onSuccess(Location location) {
+                    if (location != null) {
+                        Latitude = location.getLatitude();
+                        Longitude = location.getLongitude();
+                        DrawPath();
+                        LatLng myHome = new LatLng(Latitude, Longitude);
+                        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(myHome, 14));
+                    }
                 }
-            }
-        });
+            });
     }
 
-    private void ShowShipmentsMarker()
-    {
+    private void ShowShipmentsMarker() {
         GlobalVar.GV().UserID = 1;
-        for (int i = 0;i<GlobalVar.GV().myRouteShipmentList.size();i++)
-        {
+        for (int i = 0; i < GlobalVar.GV().myRouteShipmentList.size(); i++) {
             LatLng latLng = new LatLng(Double.parseDouble(GlobalVar.GV().myRouteShipmentList.get(i).Latitude), Double.parseDouble(GlobalVar.GV().myRouteShipmentList.get(i).Longitude));
             BitmapDescriptor icon = BitmapDescriptorFactory.fromResource(R.drawable.deliverymarker);
             if (GlobalVar.GV().myRouteShipmentList.get(i).TypeID == 2)
@@ -325,45 +302,36 @@ public class ShipmentsMapActivity
     }
 
     @Override
-    public void onDirectionFinderStart()
-    {
+    public void onDirectionFinderStart() {
         progressDialog = ProgressDialog.show(this, "Please wait.", "Finding direction..!", true);
 
-        if (originMarkers != null)
-        {
-            for (Marker marker : originMarkers)
-            {
+        if (originMarkers != null) {
+            for (Marker marker : originMarkers) {
                 marker.remove();
             }
         }
 
-        if (destinationMarkers != null)
-        {
-            for (Marker marker : destinationMarkers)
-            {
+        if (destinationMarkers != null) {
+            for (Marker marker : destinationMarkers) {
                 marker.remove();
             }
         }
 
-        if (polylinePaths != null)
-        {
-            for (Polyline polyline:polylinePaths )
-            {
+        if (polylinePaths != null) {
+            for (Polyline polyline : polylinePaths) {
                 polyline.remove();
             }
         }
     }
 
     @Override
-    public void onDirectionFinderSuccess(List<Route> routess)
-    {
+    public void onDirectionFinderSuccess(List<Route> routess) {
         progressDialog.dismiss();
         polylinePaths = new ArrayList<>();
         originMarkers = new ArrayList<>();
         destinationMarkers = new ArrayList<>();
 
-        for (Route route1 : routess)
-        {
+        for (Route route1 : routess) {
             originMarkers.add(mMap.addMarker(new MarkerOptions()
                     .icon(BitmapDescriptorFactory.fromResource(R.drawable.currentlocation))
                     .title(route1.startAddress)
@@ -386,8 +354,7 @@ public class ShipmentsMapActivity
     }
 
     @Override
-    public boolean onMarkerClick(Marker marker)
-    {
+    public boolean onMarkerClick(Marker marker) {
         Toast.makeText(this,
                 marker.getTitle() + ":" + marker.getId() + " : " + marker.getAlpha() +
                         " has been clicked " + 1 + " times.",
@@ -396,36 +363,29 @@ public class ShipmentsMapActivity
     }
 
 
-
-
-
-
-
     private Circle geoFenceLimits;
-    private void drawGeofence(Marker geoFenceMarker)
-    {
+
+    private void drawGeofence(Marker geoFenceMarker) {
 //        if ( geoFenceLimits != null )
 //            geoFenceLimits.remove();
 
         CircleOptions circleOptions = new CircleOptions()
-                .center( geoFenceMarker.getPosition())
+                .center(geoFenceMarker.getPosition())
                 .strokeColor(Color.RED)
-                .fillColor( Color.argb(100, 150,150,150) )
-                .radius( GEOFENCE_RADIUS );
-        geoFenceLimits = mMap.addCircle( circleOptions );
+                .fillColor(Color.argb(100, 150, 150, 150))
+                .radius(GEOFENCE_RADIUS);
+        geoFenceLimits = mMap.addCircle(circleOptions);
     }
 
-    private void removeGeofenceDraw(Marker geoFenceMarker)
-    {
-        if ( geoFenceMarker != null)
+    private void removeGeofenceDraw(Marker geoFenceMarker) {
+        if (geoFenceMarker != null)
             geoFenceMarker.remove();
-        if ( geoFenceLimits != null )
+        if (geoFenceLimits != null)
             geoFenceLimits.remove();
     }
 
     // Add the created GeofenceRequest to the device's monitoring list
-    private void addGeofence(GeofencingRequest request)
-    {
+    private void addGeofence(GeofencingRequest request) {
         if (checkPermission())
             LocationServices.GeofencingApi.addGeofences(
                     googleApiClient,
@@ -436,14 +396,14 @@ public class ShipmentsMapActivity
 
     private PendingIntent geoFencePendingIntent;
     private final int GEOFENCE_REQ_CODE = 0;
-    private PendingIntent createGeofencePendingIntent()
-    {
-        if ( geoFencePendingIntent != null )
+
+    private PendingIntent createGeofencePendingIntent() {
+        if (geoFencePendingIntent != null)
             return geoFencePendingIntent;
 
-        Intent intent = new Intent( this, GeofenceTransitionService.class);
+        Intent intent = new Intent(this, GeofenceTransitionService.class);
         return PendingIntent.getService(
-                this, GEOFENCE_REQ_CODE, intent, PendingIntent.FLAG_UPDATE_CURRENT );
+                this, GEOFENCE_REQ_CODE, intent, PendingIntent.FLAG_UPDATE_CURRENT);
     }
 
 //    private Marker geoFenceMarker;
@@ -466,67 +426,57 @@ public class ShipmentsMapActivity
 //    }
 
     // Check for permission to access Location
-    private boolean checkPermission()
-    {
+    private boolean checkPermission() {
         // Ask for permission if it wasn't granted yet
         return (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-                == PackageManager.PERMISSION_GRANTED );
+                == PackageManager.PERMISSION_GRANTED);
     }
 
     @Override
-    public void onResult(@NonNull Status status)
-    {
-        if ( status.isSuccess() )
-        {
+    public void onResult(@NonNull Status status) {
+        if (status.isSuccess()) {
 //            saveGeofence();
 //            drawGeofence();
-        }
-        else
-            {
+        } else {
             // inform about fail
         }
 
     }
 
     @Override
-    public void onConnected(@Nullable Bundle bundle)
-    {
+    public void onConnected(@Nullable Bundle bundle) {
         getLastKnownLocation();
     }
 
     // Get last known location
-    private void getLastKnownLocation()
-    {
-        if ( checkPermission() ) {
+    private void getLastKnownLocation() {
+        if (checkPermission()) {
             lastLocation = LocationServices.FusedLocationApi.getLastLocation(googleApiClient);
-            if ( lastLocation != null )
-            {
+            if (lastLocation != null) {
                 writeLastLocation();
 //                startLocationUpdates();
             } else {
 //                startLocationUpdates();
             }
-        }
-        else askPermission();
+        } else askPermission();
     }
 
     private final int REQ_PERMISSION = 999;
+
     // Asks for permission
     private void askPermission() {
         ActivityCompat.requestPermissions(
                 this,
-                new String[] { Manifest.permission.ACCESS_FINE_LOCATION },
+                new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                 REQ_PERMISSION
         );
     }
 
-    private void writeLastLocation()
-    {
+    private void writeLastLocation() {
         writeActualLocation(lastLocation);
     }
 
-    private void writeActualLocation(Location location)
-    {
+    private void writeActualLocation(Location location) {
 //        textLat.setText( "Lat: " + location.getLatitude() );
 //        textLong.setText( "Long: " + location.getLongitude() );
 
@@ -534,14 +484,14 @@ public class ShipmentsMapActivity
     }
 
     private Marker locationMarker;
-    private void markerLocation(LatLng latLng)
-    {
+
+    private void markerLocation(LatLng latLng) {
         String title = latLng.latitude + ", " + latLng.longitude;
         MarkerOptions markerOptions = new MarkerOptions()
                 .position(latLng)
                 .title(title);
-        if ( mMap!=null ) {
-            if ( locationMarker != null )
+        if (mMap != null) {
+            if (locationMarker != null)
                 locationMarker.remove();
             locationMarker = mMap.addMarker(markerOptions);
             float zoom = 14f;
@@ -549,9 +499,12 @@ public class ShipmentsMapActivity
             mMap.animateCamera(cameraUpdate);
         }
     }
-    @Override
-    public void onConnectionSuspended(int i) {    }
 
     @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {    }
+    public void onConnectionSuspended(int i) {
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+    }
 }

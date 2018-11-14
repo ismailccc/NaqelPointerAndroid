@@ -11,7 +11,8 @@
         android:id="@+id/scrollView2"
         android:layout_width="370dp"
         android:layout_height="207dp"
-        tools:layout_editor_absoluteX="7dp">
+        tools:layout_editor_absoluteX="7dp"
+        tools:ignore="MissingConstraints">
 
 
         <android.support.constraint.ConstraintLayout
@@ -481,6 +482,7 @@
             android:background="@drawable/round"
             android:onClick="AcceptClick"
             android:text="Accept"
+            android:visibility="gone"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             tools:ignore="HardcodedText,RtlHardcoded" />
@@ -494,6 +496,7 @@
             android:background="@drawable/round"
             android:onClick="RejectClick"
             android:text="Reject"
+            android:visibility="gone"
             app:layout_constraintStart_toEndOf="@+id/btnAccept"
             app:layout_constraintTop_toTopOf="parent"
             tools:ignore="HardcodedText,RtlHardcoded" />

@@ -2,6 +2,7 @@ package com.naqelexpress.naqelpointer.JSON;
 
 import android.os.AsyncTask;
 import android.util.Base64;
+import android.util.Log;
 
 import com.naqelexpress.naqelpointer.Classes.OnUpdateListener;
 import com.naqelexpress.naqelpointer.GlobalVar;
@@ -29,7 +30,7 @@ public class ProjectAsyncTask extends AsyncTask<String, Void, String>
         return msg;
     }
 
-    String URL = GlobalVar.GV().NaqelPointerWebAPILink;
+    String URL = GlobalVar.GV().NaqelPointerAPILink;
     String CustomURL = "";
     String Controller = "";
     String CallType = "";
@@ -45,7 +46,7 @@ public class ProjectAsyncTask extends AsyncTask<String, Void, String>
                     url.openConnection();
 
             //set timeout for reading InputStream
-            cc.setReadTimeout(5000);
+            cc.setReadTimeout(60000);
             cc.setRequestProperty("Content-Type","application/json; charset=UTF-8");
             cc.setRequestProperty("AppID", String.valueOf(GlobalVar.GV().AppID));
             cc.setRequestProperty("UseToken","no");
@@ -54,7 +55,7 @@ public class ProjectAsyncTask extends AsyncTask<String, Void, String>
             cc.setRequestProperty("Authorization",Auth);
 
             // set timeout for connection
-            cc.setConnectTimeout(5000);
+            cc.setConnectTimeout(60000);
 
             //set HTTP method to GET
             cc.setRequestMethod("GET");
@@ -89,7 +90,7 @@ public class ProjectAsyncTask extends AsyncTask<String, Void, String>
             HttpURLConnection cc = (HttpURLConnection)
                     url.openConnection();
             //set timeout for reading InputStream
-            cc.setReadTimeout(5000);
+            cc.setReadTimeout(60000);
             cc.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
             if (CustomURL == "")
             {
@@ -100,7 +101,7 @@ public class ProjectAsyncTask extends AsyncTask<String, Void, String>
                 cc.setRequestProperty("Authorization", Auth);
             }
             // set timeout for connection
-            cc.setConnectTimeout(5000);
+            cc.setConnectTimeout(60000);
             //set HTTP method to POST
             cc.setRequestMethod("POST");
             //set it to true as we are connecting for input
@@ -127,7 +128,7 @@ public class ProjectAsyncTask extends AsyncTask<String, Void, String>
             }
 
         } catch (Exception e) {
-            //Log.e(LOG_TAG, "Error in GetData", e);
+            Log.e("Error", "Error in GetData", e);
         }
         return DataInputStream;
 
@@ -203,8 +204,8 @@ public class ProjectAsyncTask extends AsyncTask<String, Void, String>
     {
         InputStream is = null;
         String res = "";
-        if (!GlobalVar.GV().HasInternetAccess)
-            return res;
+//        if (!GlobalVar.GV().HasInternetAccess)
+//            return res;
 
         if (CallType.equals("Post"))
             if (CustomURL != "")

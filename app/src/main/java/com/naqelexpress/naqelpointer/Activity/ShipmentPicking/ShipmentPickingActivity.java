@@ -7,6 +7,7 @@ import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -23,13 +24,13 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.naqelexpress.naqelpointer.JSON.DataSync;
 import com.naqelexpress.naqelpointer.R;
 
-import static com.naqelexpress.naqelpointer.GlobalVar.*;
+import static com.naqelexpress.naqelpointer.GlobalVar.AlertType;
 import static com.naqelexpress.naqelpointer.GlobalVar.GV;
+import static com.naqelexpress.naqelpointer.GlobalVar.PermissionType;
 
 public class ShipmentPickingActivity
-        extends com.naqelexpress.naqelpointer.Classes.MainActivity
-        implements OnMapReadyCallback
-{
+        extends AppCompatActivity
+        implements OnMapReadyCallback {
     private GoogleMap mMap;
     Button btnRefresh;
     Marker now;
@@ -38,38 +39,33 @@ public class ShipmentPickingActivity
     LatLng latLng;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState)
-    {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.shipmentpicking);
 
-        GV().context = this;
-        DataSync dataSync = new DataSync();
-        dataSync.GetShipmentForPicking();
+//
+//        DataSync dataSync = new DataSync();
+//        dataSync.GetShipmentForPicking();
 
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
         btnRefresh = (Button) findViewById(R.id.btnRefresh);
-        btnRefresh.setOnClickListener(new View.OnClickListener()
-        {
+        btnRefresh.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v)
-            {
+            public void onClick(View v) {
 //                ShowShipmentsMarker();
                 btnRefresh.setVisibility(View.INVISIBLE);
-                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng,10));
+                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 10));
             }
         });
 
         LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
-        android.location.LocationListener locationListener = new android.location.LocationListener()
-        {
+        android.location.LocationListener locationListener = new android.location.LocationListener() {
             @Override
-            public void onLocationChanged(Location location)
-            {
+            public void onLocationChanged(Location location) {
                 if (now != null)
                     now.remove();
 
@@ -84,50 +80,47 @@ public class ShipmentPickingActivity
             }
 
             @Override
-            public void onStatusChanged(String provider, int status, Bundle extras)           {            }
+            public void onStatusChanged(String provider, int status, Bundle extras) {
+            }
 
             @Override
-            public void onProviderEnabled(String provider)             {            }
+            public void onProviderEnabled(String provider) {
+            }
 
             @Override
-            public void onProviderDisabled(String provider) {            }
+            public void onProviderDisabled(String provider) {
+            }
         };
-        if (!GV().checkPermission(GV().activity, PermissionType.Camera) )
-        {
-            GV().ShowSnackbar(mainRootView, getString(R.string.NeedCameraPermission), AlertType.Error);
-            GV().askPermission(GV().activity, PermissionType.Camera);
-        }
-        else
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,500,1,locationListener);
+        if (!GV().checkPermission(ShipmentPickingActivity.this, PermissionType.Camera)) {
+            GV().ShowSnackbar(getWindow().getDecorView().getRootView(), getString(R.string.NeedCameraPermission), AlertType.Error);
+            GV().askPermission(ShipmentPickingActivity.this, PermissionType.Camera);
+        } else
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 500, 1, locationListener);
     }
 
     @Override
-    public void onMapReady(GoogleMap googleMap)
-    {
+    public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
         mMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
             @Override
-            public void onInfoWindowClick(Marker marker)
-            {
+            public void onInfoWindowClick(Marker marker) {
                 Intent i = new Intent(ShipmentPickingActivity.this, ShipmentPickingSelectingDialog.class);
                 startActivity(i);
             }
         });
 
-        mMap.setInfoWindowAdapter(new GoogleMap.InfoWindowAdapter()
-        {
+        mMap.setInfoWindowAdapter(new GoogleMap.InfoWindowAdapter() {
             @Override
             public View getInfoWindow(Marker marker) {
                 return null;
             }
 
             @Override
-            public View getInfoContents(Marker marker)
-            {
-                View view = getLayoutInflater().inflate(R.layout.shipmentpickingseletingdialog,null);
+            public View getInfoContents(Marker marker) {
+                View view = getLayoutInflater().inflate(R.layout.shipmentpickingseletingdialog, null);
                 TextView txt = (TextView) view.findViewById(R.id.txtWeight);
-                double distance = CalculationByDistance(latLng,marker.getPosition());
+                double distance = CalculationByDistance(latLng, marker.getPosition());
                 txt.setText(String.valueOf(distance));
                 return view;
             }
@@ -145,12 +138,10 @@ public class ShipmentPickingActivity
         mMap.getUiSettings().setTiltGesturesEnabled(true);
         mMap.getUiSettings().setRotateGesturesEnabled(true);
 
-        if (!GV().checkPermission(GV().activity, PermissionType.Camera))
-        {
-            GV().ShowSnackbar(mainRootView, getString(R.string.NeedCameraPermission), AlertType.Error);
-            GV().askPermission(GV().activity, PermissionType.Camera);
-        }
-        else
+        if (!GV().checkPermission(ShipmentPickingActivity.this, PermissionType.Camera)) {
+            GV().ShowSnackbar(getWindow().getDecorView().getRootView(), getString(R.string.NeedCameraPermission), AlertType.Error);
+            GV().askPermission(ShipmentPickingActivity.this, PermissionType.Camera);
+        } else
             mMap.setMyLocationEnabled(true);
     }
 
@@ -178,10 +169,9 @@ public class ShipmentPickingActivity
 //        }
 //    }
 
-    public double CalculationByDistance(LatLng StartP, LatLng EndP)
-    {
-        float [] results = new float[5];
-        Location.distanceBetween(StartP.latitude,StartP.longitude,EndP.latitude,EndP.longitude,results);
+    public double CalculationByDistance(LatLng StartP, LatLng EndP) {
+        float[] results = new float[5];
+        Location.distanceBetween(StartP.latitude, StartP.longitude, EndP.latitude, EndP.longitude, results);
 
         Location locationA = new Location("point A");
 
@@ -220,19 +210,16 @@ public class ShipmentPickingActivity
     }
 
     @Override
-    public void onBackPressed()
-    {
+    public void onBackPressed() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Exit")
                 .setMessage("Are you sure you want to exit?")
-                .setPositiveButton("OK",new DialogInterface.OnClickListener()
-                {
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     @Override
-                    public void onClick(DialogInterface dialogInterface,int which)
-                    {
+                    public void onClick(DialogInterface dialogInterface, int which) {
                         ShipmentPickingActivity.super.onBackPressed();
                     }
-                }).setNegativeButton("Cancel",null).setCancelable(false);
+                }).setNegativeButton("Cancel", null).setCancelable(false);
         AlertDialog alertDialog = builder.create();
         alertDialog.show();
     }

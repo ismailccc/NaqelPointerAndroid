@@ -7,8 +7,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 
 public class WaybillDetailsResult
-    extends DefaultResult
-{
+        extends DefaultResult {
     public int ID = 0;
     public int WaybillNo = 0;
     public int PiecesCount = 0;
@@ -25,20 +24,18 @@ public class WaybillDetailsResult
     private String CityName = "";
     private String CityFName = "";
     private LocationCoordinate locationCoordinate;
+    public boolean signrequired = false;
 
     public ArrayList<String> BarCodeList = new ArrayList<String>();
 
-    public WaybillDetailsResult()
-    {
+    public WaybillDetailsResult() {
         BarCodeList = new ArrayList<>();
         locationCoordinate = new LocationCoordinate();
     }
 
-    public WaybillDetailsResult(String finalJson)
-    {
+    public WaybillDetailsResult(String finalJson) {
         JSONObject jsonObject;
-        try
-        {
+        try {
             jsonObject = new JSONObject(finalJson);
 
             ID = Integer.parseInt(jsonObject.getString("ID"));
@@ -56,23 +53,22 @@ public class WaybillDetailsResult
             Near = jsonObject.getString("Near");
             CityName = jsonObject.getString("CityName");
             CityFName = jsonObject.getString("CityFName");
+            if (jsonObject.getInt("ClientID") == 9018270)
+                signrequired = true;
 
             locationCoordinate = new LocationCoordinate();
             BarCodeList = new ArrayList<>();
 
             JSONObject Coordinate = jsonObject.getJSONObject("locationCoordinate");
-            locationCoordinate.Longitude= Coordinate.getString("Longitude");
+            locationCoordinate.Longitude = Coordinate.getString("Longitude");
             locationCoordinate.Latitude = Coordinate.getString("Latitude");
 
             JSONArray jsonArray = jsonObject.getJSONArray("BarCodeList");
-            for (int i = 0 ;i< jsonArray.length();i++)
-            {
+            for (int i = 0; i < jsonArray.length(); i++) {
                 String barcode = jsonArray.getString(i);
                 BarCodeList.add(barcode);
             }
-        }
-        catch (JSONException e)
-        {
+        } catch (JSONException e) {
             e.printStackTrace();
         }
     }

@@ -1,24 +1,27 @@
 package com.naqelexpress.naqelpointer.Classes;
 
 import android.content.Intent;
-//import android.media.Ringtone;
-//import android.media.RingtoneManager;
-//import android.net.Uri;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+
 import com.naqelexpress.naqelpointer.R;
+
 import java.util.ArrayList;
 import java.util.List;
+
 import me.dm7.barcodescanner.zbar.BarcodeFormat;
 import me.dm7.barcodescanner.zbar.Result;
 import me.dm7.barcodescanner.zbar.ZBarScannerView;
 
-public class NewBarCodeScanner
-        extends MainActivity
-        implements  ZBarScannerView.ResultHandler
-{
+//import android.media.Ringtone;
+//import android.media.RingtoneManager;
+//import android.net.Uri;
+
+public class NewBarCodeScanner extends AppCompatActivity
+        implements ZBarScannerView.ResultHandler {
     private static final String FLASH_STATE = "FLASH_STATE";
     private static final String AUTO_FOCUS_STATE = "AUTO_FOCUS_STATE";
     private static final String SELECTED_FORMATS = "SELECTED_FORMATS";
@@ -30,20 +33,16 @@ public class NewBarCodeScanner
     private int mCameraId = -1;
 
     @Override
-    public void onCreate(Bundle state)
-    {
+    public void onCreate(Bundle state) {
         super.onCreate(state);
         setContentView(R.layout.newbarcodescanner);
 
-        if(state != null)
-        {
+        if (state != null) {
             mFlash = state.getBoolean(FLASH_STATE, false);
             mAutoFocus = state.getBoolean(AUTO_FOCUS_STATE, true);
             mSelectedIndices = state.getIntegerArrayList(SELECTED_FORMATS);
             mCameraId = state.getInt(CAMERA_ID, -1);
-        }
-        else
-        {
+        } else {
             mFlash = false;
             mAutoFocus = true;
             mSelectedIndices = null;
@@ -55,11 +54,9 @@ public class NewBarCodeScanner
         setupFormats();
         contentFrame.addView(mScannerView);
         Button btnFlash = (Button) findViewById(R.id.btnFlash);
-        btnFlash.setOnClickListener(new View.OnClickListener()
-        {
+        btnFlash.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v)
-            {
+            public void onClick(View v) {
                 mFlash = !mFlash;
                 mScannerView.setFlash(mFlash);
             }
@@ -68,8 +65,7 @@ public class NewBarCodeScanner
     }
 
     @Override
-    public void onResume()
-    {
+    public void onResume() {
         super.onResume();
         mScannerView.setResultHandler(this);
         mScannerView.startCamera(mCameraId);
@@ -78,8 +74,7 @@ public class NewBarCodeScanner
     }
 
     @Override
-    public void onSaveInstanceState(Bundle outState)
-    {
+    public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putBoolean(FLASH_STATE, mFlash);
         outState.putBoolean(AUTO_FOCUS_STATE, mAutoFocus);
@@ -87,35 +82,32 @@ public class NewBarCodeScanner
         outState.putInt(CAMERA_ID, mCameraId);
     }
 
+
     @Override
-    public void handleResult(Result rawResult)
-    {
+    public void handleResult(Result rawResult) {
         Intent intent = new Intent();
         String result = rawResult.getContents();
         intent.putExtra("barcode", result);
-        setResult(RESULT_OK,intent);
+        setResult(RESULT_OK, intent);
         finish();
     }
 
-    public void setupFormats()
-    {
+    public void setupFormats() {
         List<BarcodeFormat> formats = new ArrayList<>();
-        if(mSelectedIndices == null || mSelectedIndices.isEmpty())
-        {
+        if (mSelectedIndices == null || mSelectedIndices.isEmpty()) {
             mSelectedIndices = new ArrayList<>();
-            for(int i = 0; i < BarcodeFormat.ALL_FORMATS.size(); i++)
+            for (int i = 0; i < BarcodeFormat.ALL_FORMATS.size(); i++)
                 mSelectedIndices.add(i);
         }
 
-        for(int index : mSelectedIndices)
+        for (int index : mSelectedIndices)
             formats.add(BarcodeFormat.ALL_FORMATS.get(index));
-        if(mScannerView != null)
+        if (mScannerView != null)
             mScannerView.setFormats(formats);
     }
 
     @Override
-    public void onPause()
-    {
+    public void onPause() {
         super.onPause();
         mScannerView.stopCamera();
     }

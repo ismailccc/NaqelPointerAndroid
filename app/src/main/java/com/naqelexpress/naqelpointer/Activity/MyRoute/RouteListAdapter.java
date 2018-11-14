@@ -6,33 +6,34 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
+
 import com.naqelexpress.naqelpointer.DB.DBObjects.MyRouteShipments;
 import com.naqelexpress.naqelpointer.R;
+
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
+
 import java.util.List;
 
-class RouteListAdapter
-        extends BaseAdapter
-{
+public class RouteListAdapter
+        extends BaseAdapter {
     private Context context;
     private List<MyRouteShipments> itemList;
+    private String class_;
 
-    RouteListAdapter(Context context, List<MyRouteShipments> itemList)
-    {
+    public RouteListAdapter(Context context, List<MyRouteShipments> itemList, String calss_) {
         this.context = context;
         this.itemList = itemList;
+        this.class_ = calss_;
     }
 
     @Override
-    public int getCount()
-    {
+    public int getCount() {
         return itemList.size();
     }
 
     @Override
-    public MyRouteShipments getItem(int position)
-    {
+    public MyRouteShipments getItem(int position) {
         return itemList.get(position);
     }
 
@@ -41,93 +42,87 @@ class RouteListAdapter
         return position;
     }
 
-    protected static class ViewHolderItems
-    {
-        private TextView ItemNo;
-        private TextView TypeID;
-    }
 
     @Override
-    public int getViewTypeCount()
-    {
+    public int getViewTypeCount() {
         // menu type count
         return 2;
     }
 
     @Override
-    public int getItemViewType(int position)
-    {
+    public int getItemViewType(int position) {
         // current menu type
         return position % 2;
     }
 
     @Override
-    public View getView(int position, View convertView, ViewGroup parent)
-    {
-        if (convertView == null)
-        {
-            convertView = View.inflate(context,R.layout.routeitem, null);
+    public View getView(int position, View convertView, ViewGroup parent) {
+        if (convertView == null) {
+            convertView = View.inflate(context, R.layout.routeitem, null);
             new ViewHolder(convertView);
         }
 
         ViewHolder holder = (ViewHolder) convertView.getTag();
         MyRouteShipments item = getItem(position);
-        holder.txtWaybill.setText(item.ItemNo);
-        holder.lbSerial.setText(String.valueOf(getItemId(position) + 1));
-        Integer typeID = itemList.get(position).TypeID;
 
-        DateTimeFormatter fmt = DateTimeFormat.forPattern("HH:mm");
-        String dateString = fmt.print(itemList.get(position).ExpectedTime);
-        holder.txtExpectedTime.setText(dateString);
-        //if (position %4 == 0)
+
+        holder.lbSerial.setText(String.valueOf(getItemId(position) + 1));
+        if (class_.equals("MyRouteActivity")) {
+            holder.txtWaybill.setText(item.ItemNo);
+            Integer typeID = itemList.get(position).TypeID;
+            DateTimeFormatter fmt = DateTimeFormat.forPattern("HH:mm");
+            String dateString = fmt.print(itemList.get(position).ExpectedTime);
+            holder.txtExpectedTime.setText(dateString);
+            //if (position %4 == 0)
             //holder.panel.setBackgroundColor(Color.RED);
 
-        if (itemList.get(position).HasComplaint)
-        {
-            holder.imgHasComplaint.setVisibility(View.VISIBLE);
-            holder.imgHasComplaint.setImageResource(R.drawable.redstar);
-            holder.imgHasComplaint.refreshDrawableState();
-        }
-        else
+            if (itemList.get(position).HasComplaint) {
+                holder.imgHasComplaint.setVisibility(View.VISIBLE);
+                holder.imgHasComplaint.setImageResource(R.drawable.redstar);
+                holder.imgHasComplaint.refreshDrawableState();
+            } else
+                holder.imgHasComplaint.setVisibility(View.GONE);
+
+            //holder.header.setText(item.PODDetail);
+
+            if (itemList.get(position).HasDeliveryRequest) {
+                holder.imgHasDeliveryRequest.setVisibility(View.VISIBLE);
+                holder.imgHasDeliveryRequest.setImageResource(R.drawable.greenstar);
+                holder.imgHasComplaint.refreshDrawableState();
+            } else
+                holder.imgHasDeliveryRequest.setVisibility(View.GONE);
+
+            if (item.Latitude.length() > 3 && item.Longitude.length() > 3) {
+                holder.imgHasLocation.setVisibility(View.VISIBLE);
+                holder.imgHasLocation.setImageResource(R.drawable.marker);
+            } else
+                holder.imgHasLocation.setVisibility(View.INVISIBLE);
+
+            if (typeID == 1) {
+                holder.txtType.setText("Delivery");
+            } else if (typeID == 2) {
+                holder.txtType.setText("PickUp");
+            }
+        } else {
+            holder.txtWaybill.setText("Waybill No\n" + item.ItemNo);
             holder.imgHasComplaint.setVisibility(View.GONE);
+            holder.imgHasLocation.setVisibility(View.GONE);
+            holder.txtExpectedTime.setVisibility(View.GONE);
+            holder.lbDeliveryDate.setVisibility(View.GONE);
+            holder.txtAmount.setVisibility(View.GONE);
 
-        if (itemList.get(position).HasDeliveryRequest)
-        {
-            holder.imgHasDeliveryRequest.setVisibility(View.VISIBLE);
-            holder.imgHasDeliveryRequest.setImageResource(R.drawable.greenstar);
-            holder.imgHasComplaint.refreshDrawableState();
-        }
-        else
-            holder.imgHasDeliveryRequest.setVisibility(View.GONE);
-
-        if(item.Latitude.length() > 3 && item.Longitude.length() > 3)
-        {
-            holder.imgHasLocation.setVisibility(View.VISIBLE);
-            holder.imgHasLocation.setImageResource(R.drawable.haslocation);
-        }
-        else
-            holder.imgHasLocation.setVisibility(View.INVISIBLE);
-
-        if (typeID == 1)
-        {
-            holder.txtType.setText("Delivery");
-        }
-        else
-        if (typeID == 2)
-        {
-            holder.txtType.setText("PickUp");
         }
         return convertView;
     }
 
-    class ViewHolder
-    {
-        TextView txtWaybill, txtType, lbSerial,txtExpectedTime;
+    class ViewHolder {
+        TextView txtWaybill, txtType, lbSerial, txtExpectedTime, lbDeliveryDate, txtAmount, header;
         ImageView imgHasLocation, imgHasComplaint, imgHasDeliveryRequest;
         //TextView panel;
 
-        public ViewHolder(View view)
-        {
+        public ViewHolder(View view) {
+            txtAmount = (TextView) view.findViewById(R.id.txtAmount);
+            lbDeliveryDate = (TextView) view.findViewById(R.id.lbDeliveryDate);
             txtWaybill = (TextView) view.findViewById(R.id.txtWaybilll);
             lbSerial = (TextView) view.findViewById(R.id.lbSerial);
             txtType = (TextView) view.findViewById(R.id.txtAmount);
@@ -137,6 +132,7 @@ class RouteListAdapter
 
             imgHasComplaint = (ImageView) view.findViewById(R.id.imgHasComplaint);
             imgHasDeliveryRequest = (ImageView) view.findViewById(R.id.imgHasRequest);
+            header = (TextView) view.findViewById(R.id.changesheader);
             view.setTag(this);
         }
     }

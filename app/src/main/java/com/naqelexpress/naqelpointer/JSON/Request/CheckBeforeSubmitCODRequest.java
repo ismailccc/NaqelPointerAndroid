@@ -10,6 +10,7 @@ public class CheckBeforeSubmitCODRequest
 {
     public int EmployID = GlobalVar.GV().EmployID;
     public int DeliverySheetID = 0;
+    public String DeliverySheetDate = "";
     public double TotalCash = 0;
     public double TotalPOS = 0;
 }

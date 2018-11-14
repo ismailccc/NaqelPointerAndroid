@@ -1,9 +1,12 @@
 package com.naqelexpress.naqelpointer.Activity.Settings;
 
+import android.content.Context;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -12,17 +15,16 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import com.naqelexpress.naqelpointer.GlobalVar;
-import com.naqelexpress.naqelpointer.Classes.MainActivity;
+import com.naqelexpress.naqelpointer.DB.DBConnections;
 import com.naqelexpress.naqelpointer.DB.DBObjects.UserSettings;
+import com.naqelexpress.naqelpointer.GlobalVar;
 import com.naqelexpress.naqelpointer.R;
 
 import org.joda.time.DateTime;
 import org.joda.time.DurationFieldType;
 
 public class SettingActivity
-        extends MainActivity
-{
+        extends AppCompatActivity {
 //    FloatingActionButton SaveButton, CloseButton, OptionsButton;
 //    TextView txtSave, txtClose;
 //    Animation ShowButtonAnimation,HideButtonAnimation,ShowLayoutAnimation,HideLayoutAnimation;
@@ -32,17 +34,22 @@ public class SettingActivity
     CheckBox chShowScaningCamera;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState)
-    {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if(Created)
-            return;
-        Created = true;
+
         setContentView(R.layout.settingactivity);
 
         txtIPAddress = (EditText) findViewById(R.id.txtIPAddress);
         lbLastMasterUpdate = (TextView) findViewById(R.id.lbLastMasterUpdate);
         chShowScaningCamera = (CheckBox) findViewById(R.id.chShowScaningCamera);
+        CheckBox mc = (CheckBox) findViewById(R.id.multiplemarker);
+
+        SharedPreferences pref = getApplicationContext().getSharedPreferences("naqelSettings", 0);
+        boolean multiple_not = pref.getBoolean("mc", true);
+        if (multiple_not)
+            mc.setChecked(true);
+        else
+            mc.setChecked(false);
 
 //        OptionsButton = (FloatingActionButton) findViewById(R.id.btnOptions);
 //        SaveButton = (FloatingActionButton) findViewById(R.id.btnShowSelectedShipments);
@@ -83,67 +90,60 @@ public class SettingActivity
 //            }
 //        });
 
-        int Count = GlobalVar.GV().dbConnections.getCount("UserSettings"," EmployID = " + String.valueOf(GlobalVar.GV().EmployID));
-        if ( Count > 0 )
-        {
-            Cursor result = GlobalVar.GV().dbConnections.Fill("select * from UserSettings where EmployID = " + String.valueOf(GlobalVar.GV().EmployID));
-            if (result.getCount() > 0)
-            {
+        DBConnections dbConnections = new DBConnections(getApplicationContext(), null);
+        int Count = dbConnections.getCount("UserSettings", " EmployID = " + String.valueOf(GlobalVar.GV().EmployID),getApplicationContext());
+        if (Count > 0) {
+            Cursor result = dbConnections.Fill("select * from UserSettings where EmployID = " + String.valueOf(GlobalVar.GV().EmployID),getApplicationContext());
+            if (result.getCount() > 0) {
                 result.moveToFirst();
-                do
-                {
+                do {
                     int ID = Integer.parseInt(result.getString(result.getColumnIndex("ID")));
                     int EmployID = Integer.parseInt(result.getString(result.getColumnIndex("EmployID")));
                     String IPAddress = result.getString(result.getColumnIndex("IPAddress"));
                     boolean ShowScaningCamera = Boolean.parseBoolean(result.getString(result.getColumnIndex("ShowScaningCamera")));
-                    DateTime dateTime = DateTime.now().withFieldAdded(DurationFieldType.days(),-30);
-                    if(GlobalVar.GV().dbConnections.isColumnExist("UserSettings","LastBringMasterData"))
+                    DateTime dateTime = DateTime.now().withFieldAdded(DurationFieldType.days(), -30);
+                    if (dbConnections.isColumnExist("UserSettings", "LastBringMasterData",getApplicationContext()))
                         dateTime = DateTime.parse(result.getString(result.getColumnIndex("LastBringMasterData")));
 
-                    GlobalVar.GV().currentSettings = new UserSettings(ID,EmployID,IPAddress,ShowScaningCamera,dateTime);
+                    GlobalVar.GV().currentSettings = new UserSettings(ID, EmployID, IPAddress, ShowScaningCamera, dateTime);
                 }
                 while (result.moveToNext());
             }
-        }
-        else
-        {
+        } else {
             GlobalVar.GV().currentSettings = new UserSettings("212.93.160.150", true);
-            GlobalVar.GV().dbConnections.InsertSettings(GlobalVar.GV().currentSettings);
-            GlobalVar.GV().currentSettings.ID = GlobalVar.GV().dbConnections.getMaxID("UserSettings");
+            dbConnections.InsertSettings(GlobalVar.GV().currentSettings,getApplicationContext());
+            GlobalVar.GV().currentSettings.ID = dbConnections.getMaxID("UserSettings",getApplicationContext());
         }
 
         boolean res = GlobalVar.GV().currentSettings.ShowScaningCamera;
         txtIPAddress.setText(GlobalVar.GV().currentSettings.IPAddress);
         chShowScaningCamera.setChecked(GlobalVar.GV().currentSettings.ShowScaningCamera);
         lbLastMasterUpdate.setText((GlobalVar.GV().currentSettings.LastBringMasterData.toString()));
-        if(GlobalVar.GV().EmployID != -1)
+        if (GlobalVar.GV().EmployID != -1)
             lbLastMasterUpdate.setVisibility(View.GONE);
+
+        dbConnections.close();
     }
 
-    private void SaveData()
-    {
-        if (IsValid())
-        {
+    private void SaveData() {
+        DBConnections dbConnections = new DBConnections(getApplicationContext(), null);
+        if (IsValid()) {
             GlobalVar.GV().currentSettings.IPAddress = txtIPAddress.getText().toString();
             GlobalVar.GV().currentSettings.ShowScaningCamera = chShowScaningCamera.isChecked();
 
-            if (GlobalVar.GV().dbConnections.UpdateSettings(GlobalVar.GV().currentSettings))
-            {
-                GlobalVar.GV().ShowSnackbar(GlobalVar.GV().rootViewMainPage, getString(R.string.SaveSuccessfully), GlobalVar.AlertType.Info);
+            if (dbConnections.UpdateSettings(GlobalVar.GV().currentSettings,getWindow().getDecorView().getRootView(),getApplicationContext())) {
+                GlobalVar.GV().ShowSnackbar(getWindow().getDecorView().getRootView(), getString(R.string.SaveSuccessfully), GlobalVar.AlertType.Info);
                 finish();
-            }
-            else
-                GlobalVar.GV().ShowSnackbar(mainRootView, getString(R.string.NotSaved), GlobalVar.AlertType.Error);
+            } else
+                GlobalVar.GV().ShowSnackbar(getWindow().getDecorView().getRootView(), getString(R.string.NotSaved), GlobalVar.AlertType.Error);
         }
     }
 
-    private boolean IsValid()
-    {
+    private boolean IsValid() {
         boolean isValid = true;
-        if(txtIPAddress.getText().toString().equals(""))
-        {
-            GlobalVar.GV().ShowSnackbar(mainRootView,"Please check the IP Address or contact with IT Department for supporting.", GlobalVar.AlertType.Error);
-            isValid=false;
+        if (txtIPAddress.getText().toString().equals("")) {
+            GlobalVar.GV().ShowSnackbar(getWindow().getDecorView().getRootView(), "Please check the IP Address or contact with IT Department for supporting.", GlobalVar.AlertType.Error);
+            isValid = false;
         }
 
         return isValid;
@@ -178,18 +178,16 @@ public class SettingActivity
 //    }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu)
-    {
+    public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.settingmenu,menu);
+        inflater.inflate(R.menu.settingmenu, menu);
         return super.onCreateOptionsMenu(menu);
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle item selection
-        switch (item.getItemId())
-        {
+        switch (item.getItemId()) {
             case R.id.mnuSave:
                 SaveData();
                 return true;
@@ -199,20 +197,39 @@ public class SettingActivity
     }
 
     @Override
-    public void onBackPressed()
-    {
+    public void onBackPressed() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Exit")
                 .setMessage("Are you sure you want to exit?")
-                .setPositiveButton("OK",new DialogInterface.OnClickListener()
-                {
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     @Override
-                    public void onClick(DialogInterface dialogInterface,int which)
-                    {
+                    public void onClick(DialogInterface dialogInterface, int which) {
                         SettingActivity.super.onBackPressed();
                     }
-                }).setNegativeButton("Cancel",null).setCancelable(false);
+                }).setNegativeButton("Cancel", null).setCancelable(false);
         AlertDialog alertDialog = builder.create();
         alertDialog.show();
+    }
+
+    public void multipleColors(View view) {
+        // Is the view now checked?
+        boolean checked = ((CheckBox) view).isChecked();
+        // Check which checkbox was clicked
+        switch (view.getId()) {
+            case R.id.multiplemarker:
+                if (checked)
+                    edit_remove_multipleMarker(true);
+                else
+                    edit_remove_multipleMarker(false);
+                break;
+            // Perform your logic
+        }
+    }
+
+    private void edit_remove_multipleMarker(boolean tf) {
+        SharedPreferences sharedpreferences = getSharedPreferences("naqelSettings", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedpreferences.edit();
+        editor.putBoolean("mc", tf);
+        editor.commit();
     }
 }

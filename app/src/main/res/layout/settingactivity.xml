@@ -177,4 +177,18 @@
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/lbLastMasterUpdate"
         tools:ignore="HardcodedText" />
+
+    <CheckBox
+        android:id="@+id/multiplemarker"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginTop="8dp"
+        android:text="Multiple Marker"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/chAutomaticSync"
+        tools:ignore="HardcodedText,OnClick"
+        android:onClick="multipleColors"/>
 </android.support.constraint.ConstraintLayout>

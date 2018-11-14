@@ -1,24 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context="com.naqelexpress.naqelpointer.Activity.CheckCOD.CODCheckingActivity">
+    android:layout_height="wrap_content"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
     <EditText
         android:id="@+id/lbEmployID"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
         android:layout_marginTop="8dp"
         android:ems="10"
         android:hint="Employ ID"
         android:inputType="number"
-        app:layout_constraintTop_toTopOf="parent"
-        android:layout_marginRight="8dp"
-        app:layout_constraintRight_toRightOf="parent"
-        android:layout_marginLeft="8dp"
         app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
         tools:ignore="HardcodedText" />
 
     <EditText
@@ -29,8 +29,8 @@
         android:layout_marginRight="8dp"
         android:layout_marginTop="8dp"
         android:ems="10"
-        android:hint="Delivery Sheet No"
-        android:inputType="number"
+        android:hint="Delivery Sheet Date"
+        android:inputType="none"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/lbEmployID"
@@ -45,6 +45,7 @@
         android:ems="10"
         android:hint="Cash Amount"
         android:inputType="number"
+        android:visibility="gone"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
@@ -61,6 +62,7 @@
         android:ems="10"
         android:hint="POS Amount "
         android:inputType="number"
+        android:visibility="gone"
         app:layout_constraintHorizontal_bias="0.503"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
@@ -81,17 +83,129 @@
         app:layout_constraintTop_toBottomOf="@+id/lbPOSAmount"
         tools:ignore="HardcodedText" />
 
-    <TextView
-        android:id="@+id/lbResult"
-        android:layout_width="0dp"
+    <!--<TextView-->
+    <!--android:id="@+id/lbResult"-->
+    <!--android:layout_width="0dp"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:layout_marginLeft="8dp"-->
+    <!--android:layout_marginRight="8dp"-->
+    <!--android:layout_marginTop="8dp"-->
+    <!--android:text="Result"-->
+    <!--app:layout_constraintLeft_toLeftOf="parent"-->
+    <!--app:layout_constraintRight_toRightOf="parent"-->
+    <!--app:layout_constraintTop_toBottomOf="@+id/btnCheck"-->
+    <!--tools:ignore="HardcodedText" />-->
+
+    <LinearLayout
+        android:id="@+id/ll"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:weightSum="1"
+        app:layout_constraintTop_toBottomOf="@+id/btnCheck">
+
+
+        <TextView
+            android:id="@+id/lbResulttxt"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="8dp"
+            android:layout_marginTop="8dp"
+            android:layout_weight=".35"
+            android:text="Total COD Amount : "
+            tools:ignore="HardcodedText,RtlHardcoded" />
+
+        <TextView
+            android:id="@+id/lbResult"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="0dp"
+            android:layout_marginTop="8dp"
+            android:layout_weight=".5"
+
+            android:text="0.0"
+            android:textColor="@color/NaqelRed"
+            tools:ignore="HardcodedText,RtlHardcoded" />
+
+    </LinearLayout>
+
+    <LinearLayout
+
+        android:id="@+id/ll1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:weightSum="1"
+        app:layout_constraintTop_toBottomOf="@+id/ll">
+
+
+        <TextView
+            android:id="@+id/lbpostxt"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="8dp"
+            android:layout_marginTop="2dp"
+            android:layout_weight=".35"
+            android:text="Total POS Amount : "
+            tools:ignore="HardcodedText,RtlHardcoded" />
+
+        <TextView
+            android:id="@+id/posamt"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="4dp"
+            android:layout_marginLeft="0dp"
+            android:layout_marginTop="2dp"
+            android:layout_weight=".5"
+
+            android:text="0.0"
+            android:textColor="@color/NaqelRed"
+            tools:ignore="HardcodedText,RtlHardcoded" />
+
+    </LinearLayout>
+
+    <LinearLayout
+
+        android:id="@+id/ll2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:weightSum="1"
+        app:layout_constraintTop_toBottomOf="@+id/ll1">
+
+
+        <TextView
+            android:id="@+id/lbtotal"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="8dp"
+            android:layout_marginTop="2dp"
+            android:layout_weight=".35"
+            android:text="Total Amount "
+            tools:ignore="HardcodedText,RtlHardcoded" />
+
+        <TextView
+            android:id="@+id/totalamount"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="4dp"
+            android:layout_marginLeft="0dp"
+            android:layout_marginTop="2dp"
+            android:layout_weight=".5"
+
+            android:text="0.0"
+            android:textColor="@color/NaqelRed"
+            tools:ignore="HardcodedText,RtlHardcoded" />
+
+    </LinearLayout>
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/deliverysheet"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginBottom="10dp"
         android:layout_marginLeft="8dp"
         android:layout_marginRight="8dp"
-        android:layout_marginTop="8dp"
-        android:text="Result"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/btnCheck"
-        tools:ignore="HardcodedText" />
+        android:layout_marginTop="1dp"
+        android:scrollbars="horizontal"
+        app:layoutManager="android.support.v7.widget.LinearLayoutManager"
+        app:layout_constraintTop_toBottomOf="@+id/ll2" />
 
-</android.support.constraint.ConstraintLayout>
+</TableLayout>

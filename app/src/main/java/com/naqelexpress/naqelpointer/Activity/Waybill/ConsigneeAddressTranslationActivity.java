@@ -1,39 +1,29 @@
 package com.naqelexpress.naqelpointer.Activity.Waybill;
 
-import android.os.AsyncTask;
+import android.app.ProgressDialog;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.text.InputType;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+
 import com.naqelexpress.naqelpointer.Classes.JsonSerializerDeserializer;
-import com.naqelexpress.naqelpointer.Classes.MainActivity;
 import com.naqelexpress.naqelpointer.Classes.OnSpinerItemClick;
 import com.naqelexpress.naqelpointer.Classes.OnUpdateListener;
 import com.naqelexpress.naqelpointer.Classes.SpinnerDialog;
+import com.naqelexpress.naqelpointer.DB.DBObjects.MyRouteShipments;
 import com.naqelexpress.naqelpointer.GlobalVar;
 import com.naqelexpress.naqelpointer.JSON.ProjectAsyncTask;
 import com.naqelexpress.naqelpointer.JSON.Request.GTranslation;
-import com.naqelexpress.naqelpointer.JSON.Request.GetWaybillDetailsRequest;
-import com.naqelexpress.naqelpointer.JSON.Results.WaybillDetailsResult;
 import com.naqelexpress.naqelpointer.R;
-import org.json.JSONException;
-import org.json.JSONObject;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
 
 /**
  * Created by sofan on 12/03/2018.
  */
 
 public class ConsigneeAddressTranslationActivity
-        extends MainActivity
-{
+        extends AppCompatActivity {
     SpinnerDialog spinnerDialog;
     TextView txtTargetLanguage;
     private Bundle bundle;
@@ -48,44 +38,12 @@ public class ConsigneeAddressTranslationActivity
     private String AddressText = "";
 
     @Override
-    protected void onCreate(Bundle savedInstanceState)
-    {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if(Created)
-            return;
-        Created = true;
+
         setContentView(R.layout.consigneeaddresstranslation);
         bundle = getIntent().getExtras();
 
-        if (bundle != null)
-        {
-            int bid = Integer.parseInt(bundle.getString("ID"));
-            String sWaybill = bundle.getString("WaybillNo");
-
-            GetWaybillDetailsRequest getWaybillDetailsRequest = new GetWaybillDetailsRequest();
-            getWaybillDetailsRequest.WaybillNo = Integer.parseInt(sWaybill.toString());
-
-            JSONObject jsonObject = new JSONObject();
-            try
-            {
-                if (GlobalVar.GV().HasInternetAccess) {
-                    jsonObject.put("WaybillNo", getWaybillDetailsRequest.WaybillNo);
-
-                    jsonObject.put("AppTypeID", getWaybillDetailsRequest.AppTypeID);
-                    jsonObject.put("AppVersion", getWaybillDetailsRequest.AppVersion);
-                    jsonObject.put("LanguageID", getWaybillDetailsRequest.LanguageID);
-                    String jsonData = jsonObject.toString();
-
-                    new GetWaybillDetailsInfos().execute(jsonData);
-                }
-//                else
-//                    GlobalVar.GV().ShowSnackbar(rootView, getString(R.string.NoInternetConnection), GlobalVar.AlertType.Error);
-            }
-            catch (JSONException e)
-            {
-                e.printStackTrace();
-            }
-        }
 
         txtConsigneeName = (TextView) findViewById(R.id.txtConsigneeName);
         txtAddress = (TextView) findViewById(R.id.txtAddress);
@@ -97,156 +55,91 @@ public class ConsigneeAddressTranslationActivity
 
         txtTargetLanguage = (TextView) findViewById(R.id.txtTargetLanguage);
         txtTargetLanguage.setInputType(InputType.TYPE_NULL);
-        txtTargetLanguage.setOnClickListener(new View.OnClickListener()
-        {
+        txtTargetLanguage.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v)
-            {
+            public void onClick(View v) {
                 spinnerDialog.showSpinerDialog(false);
             }
         });
 
-//        txtTargetLanguage.setOnFocusChangeListener(new View.OnFocusChangeListener()
-//        {
-//            @Override
-//            public void onFocusChange(View v, boolean hasFocus)
-//            {
-//                if (hasFocus)
-//                    spinnerDialog.showSpinerDialog(false);
-//            }
-//        });
+        if (savedInstanceState != null)
+            setSavedInstance(savedInstanceState);
+
+
+        if (bundle != null) {
+            int position = bundle.getInt("position");
+
+            MyRouteShipments myRouteShipments = GlobalVar.GV().myRouteShipmentList.get(position);
+            if (GlobalVar.GV().IsEnglish())
+                txtConsigneeName.setText(getResources().getString(R.string.txtConsigneeName) + myRouteShipments.ConsigneeName);
+            else
+                txtConsigneeName.setText(getResources().getString(R.string.txtConsigneeName) + myRouteShipments.ConsigneeName);
+            txtAddress.setText(getResources().getString(R.string.txtAddress) + myRouteShipments.ConsigneeFirstAddress);
+
+            txtSecondAddress.setText(getResources().getString(R.string.txtSecondAddress) + myRouteShipments.ConsigneeSecondAddress);
+            txtNear.setText(getResources().getString(R.string.txtNear) + myRouteShipments.ConsigneeNear);
+            txtMobileNo.setText(getResources().getString(R.string.txtMobileNo) + myRouteShipments.ConsigneeMobile);
+            txtPhoneNo.setText(getResources().getString(R.string.txtPhoneNo) + myRouteShipments.ConsigneePhoneNumber);
+
+            AddressText = txtAddress.getText().toString();
+            //if(txtSecondAddress.getText().toString())
+            // AddressText += " " + txtSecondAddress.getText().toString();
+            // AddressText += " " + txtNear.getText().toString();
+
+        }
+
 
         Button btnTranslate = (Button) findViewById(R.id.btnTranslate);
-        btnTranslate.setOnClickListener(new View.OnClickListener()
-        {
+        btnTranslate.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v)
-            {
+            public void onClick(View v) {
 
-                GTranslation gTranslation = new GTranslation(AddressText,languageCode);
+                GTranslation gTranslation = new GTranslation(AddressText, languageCode);
                 String jsonData = JsonSerializerDeserializer.serialize(gTranslation, true);
-                ProjectAsyncTask task = new ProjectAsyncTask("Common/getGoogleTranslation", "Post",jsonData);
-                task.setUpdateListener(new OnUpdateListener()
-                {
-                    public void onPostExecuteUpdate(String obj)
-                    {
+                ProjectAsyncTask task = new ProjectAsyncTask("getGoogleTranslation", "Post", jsonData);
+                task.setUpdateListener(new OnUpdateListener() {
+                    ProgressDialog progressDialog;
+
+                    public void onPostExecuteUpdate(String obj) {
                         txtTranslationResult.setText(obj);
+                        progressDialog.dismiss();
                     }
 
-                    public void onPreExecuteUpdate()
-                    {
-                        GlobalVar.GV().ShowSnackbar(GlobalVar.GV().rootView, "Start Translation Address Data", GlobalVar.AlertType.Info);
+                    public void onPreExecuteUpdate() {
+                        progressDialog = ProgressDialog.show(ConsigneeAddressTranslationActivity.this, "Please wait.", "Translating your request."
+                                , true);
+                        ;
                     }
                 });
                 task.execute();
             }
         });
 
-        spinnerDialog = new SpinnerDialog(GlobalVar.GV().activity,GlobalVar.GV().LanguageNameList ,"Select Language",R.style.DialogAnimations_SmileWindow);
-        spinnerDialog.bindOnSpinerListener(new OnSpinerItemClick()
-        {
+        spinnerDialog = new SpinnerDialog(ConsigneeAddressTranslationActivity.this,
+                GlobalVar.GV().LanguageNameList, "Select Language", R.style.DialogAnimations_SmileWindow);
+        spinnerDialog.bindOnSpinerListener(new OnSpinerItemClick() {
             @Override
-            public void onClick(String item, int position)
-            {
+            public void onClick(String item, int position) {
                 txtTargetLanguage.setText(GlobalVar.GV().LanguageNameList.get(position));
-                languageCode =  GlobalVar.GV().LanguageList.get(position).Code;
+                languageCode = GlobalVar.GV().LanguageList.get(position).Code;
             }
         });
 
         //btnTranslate
     }
 
-    private class GetWaybillDetailsInfos extends AsyncTask<String,Void,String>
-    {
-        String result = "";
-        StringBuffer buffer;
-        @Override
-        protected String doInBackground(String... params)
-        {
-            String jsonData = params[0];
-            HttpURLConnection httpURLConnection = null;
-            OutputStream dos = null;
-            InputStream ist = null;
+    private void setSavedInstance(Bundle savedInstanceState) {
+        GlobalVar.GV().myRouteShipmentList = savedInstanceState.getParcelableArrayList("myRouteShipmentList");
+    }
 
-            try
-            {
-                URL url = new URL(GlobalVar.GV().NaqelPointerAPILink + "GetWaybillDetails");
-                httpURLConnection = (HttpURLConnection) url.openConnection();
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putParcelableArrayList("myRouteShipmentList", GlobalVar.GV().myRouteShipmentList);
+    }
 
-                httpURLConnection.setRequestMethod("POST");
-                httpURLConnection.setRequestProperty("Content-Type","application/json; charset=UTF-8");
-                httpURLConnection.setDoInput(true);
-                httpURLConnection.setDoOutput(true);
-                httpURLConnection.connect();
-
-                dos = httpURLConnection.getOutputStream();
-                httpURLConnection.getOutputStream();
-                dos.write(jsonData.getBytes());
-
-                ist = httpURLConnection.getInputStream();
-                String line ;
-                BufferedReader reader = new BufferedReader(new InputStreamReader(ist));
-                buffer = new StringBuffer();
-
-                while((line = reader.readLine())!= null)
-                {
-                    buffer.append(line);
-                }
-                return String.valueOf(buffer);
-            }
-            catch (Exception e)
-            {
-                e.printStackTrace();
-            }
-            finally
-            {
-                try
-                {
-                    if (ist != null)
-                        ist.close();
-                }
-                catch (IOException e)
-                {
-                    e.printStackTrace();
-                }
-                try
-                {
-                    if (dos != null)
-                        dos.close();
-                }
-                catch (IOException e)
-                {
-                    e.printStackTrace();
-                }
-
-                if (httpURLConnection!=null)
-                    httpURLConnection.disconnect();
-                result = String.valueOf(buffer);
-            }
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(String finalJson)
-        {
-            WaybillDetailsResult waybillDetailsResult = new WaybillDetailsResult(finalJson);
-
-            if (GlobalVar.GV().IsEnglish())
-                txtConsigneeName.setText(getResources().getString(R.string.txtConsigneeName) + waybillDetailsResult.ConsigneeName );
-            else
-                txtConsigneeName.setText(getResources().getString(R.string.txtConsigneeName) + waybillDetailsResult.ConsigneeName );
-            txtAddress.setText(getResources().getString(R.string.txtAddress) + waybillDetailsResult.Address);
-
-            txtSecondAddress.setText(getResources().getString(R.string.txtSecondAddress) + waybillDetailsResult.SecondLine);
-            txtNear.setText(getResources().getString(R.string.txtNear) + waybillDetailsResult.Near);
-            txtMobileNo.setText(getResources().getString(R.string.txtMobileNo) + waybillDetailsResult.MobileNo);
-            txtPhoneNo.setText(getResources().getString(R.string.txtPhoneNo) + waybillDetailsResult.PhoneNo);
-
-            AddressText = txtAddress.getText().toString();
-            AddressText += " " + txtSecondAddress.getText().toString();
-            AddressText += " " + txtNear.getText().toString();
-
-            super.onPostExecute(String.valueOf(finalJson));
-        }
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
     }
 }

@@ -1,10 +1,13 @@
 package com.naqelexpress.naqelpointer.Activity.Booking;
 
-import android.content.Context;
+import android.Manifest;
+import android.app.Activity;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.location.Location;
-import android.location.LocationManager;
 import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.TextView;
 
@@ -16,20 +19,25 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.naqelexpress.naqelpointer.Classes.ConsingeeMobileSpinnerDialog;
-import com.naqelexpress.naqelpointer.Classes.MainActivity;
+import com.naqelexpress.naqelpointer.Activity.PickUp.PickUpActivity;
 import com.naqelexpress.naqelpointer.DB.DBConnections;
-import com.naqelexpress.naqelpointer.DB.DBObjects.Booking;
 import com.naqelexpress.naqelpointer.GlobalVar;
 import com.naqelexpress.naqelpointer.R;
 
-public class BookingDetailActivity extends MainActivity
-        implements OnMapReadyCallback
-{
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
+
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+
+public class BookingDetailActivity extends AppCompatActivity
+        implements OnMapReadyCallback {
 
     TextView txtReferenceNo, txtClientId, txtClient, txtContactPerson, txtContactNo, txtOrgin,
-            txtDestination, txtPiecesCount,txtWeight,txtBillType,txtLoadType,txtReqTime,txtCloseTime,
-            txtRReqTime,txtRCloseTime,txtSpecialInst;
+            txtDestination, txtPiecesCount, txtWeight, txtBillType, txtLoadType, txtReqTime, txtCloseTime,
+            txtRReqTime, txtRCloseTime, txtSpecialInst;
     private GoogleMap mMap;
     Booking myBooking;
     String ConsigneeLatitude, ConsigneeLongitude;
@@ -37,19 +45,23 @@ public class BookingDetailActivity extends MainActivity
     double Latitude = 0;
     double Longitude = 0;
     LatLng latLng;
-    private Bundle bundle;
     private int BookingId;
+    int position;
+    ArrayList<Booking> bookinglist;
+
     @Override
-    protected void onCreate(Bundle savedInstanceState)
-    {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.bookingdetail);
-        bundle = getIntent().getExtras();
+        setContentView(R.layout.bookingdetailnew);
+        Bundle bundle = getIntent().getExtras();
 
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
+
+        position = bundle.getInt("position");
+        bookinglist = getIntent().getParcelableArrayListExtra("value");
 
         txtReferenceNo = (TextView) findViewById(R.id.txtReferenceNo);
         txtClientId = (TextView) findViewById(R.id.txtClientId);
@@ -61,157 +73,219 @@ public class BookingDetailActivity extends MainActivity
         txtPiecesCount = (TextView) findViewById(R.id.txtPiecesCount);
         txtWeight = (TextView) findViewById(R.id.txtWeight);
         txtBillType = (TextView) findViewById(R.id.txtBillType);
-         txtLoadType = (TextView) findViewById(R.id.txtLoadType);
+        txtLoadType = (TextView) findViewById(R.id.txtLoadType);
         txtReqTime = (TextView) findViewById(R.id.txtReqTime);
         txtCloseTime = (TextView) findViewById(R.id.txtCloseTime);
 //        txtRReqTime = (TextView) findViewById(R.id.txtRReqTime);
 //        txtRCloseTime = (TextView) findViewById(R.id.txtRCloseTime);
         txtSpecialInst = (TextView) findViewById(R.id.txtSpecialInstruction);
 
+        Date currentTime = Calendar.getInstance().getTime();
 
-        if (bundle != null)
-        {
-            for (int i = 0; i < GlobalVar.GV().myBookingList.size(); i++)
-            {
-                int bid = Integer.parseInt(bundle.getString("ID"));
+        TextView txtRemReqTime = (TextView) findViewById(R.id.txtRemReqTime);
+        txtRemReqTime.setVisibility(View.INVISIBLE);
+        TextView txtRemCloseTime = (TextView) findViewById(R.id.txtRemCloseTime);
+        txtRemCloseTime.setVisibility(View.INVISIBLE);
 
-                int bod = GlobalVar.GV().myBookingList.get(i).ID;
+        //BookingId=GlobalVar.GV().myBookingList.get(position).ID;
 
-
-                if (GlobalVar.GV().myBookingList.get(i).ID == Integer.parseInt(bundle.getString("ID")) )
-                {
-                    BookingId=GlobalVar.GV().myBookingList.get(i).ID;
-                    myBooking = GlobalVar.GV().myBookingList.get(i);
-                    txtReferenceNo.setText(myBooking.RefNo);
-                    txtClientId.setText(String.valueOf(myBooking.ClientID));
-                    txtClient.setText(myBooking.ClientName);
-                    txtContactPerson.setText(myBooking.ContactPerson);
-                    txtContactNo.setText(myBooking.ContactNumber);
-                    txtOrgin.setText(myBooking.Orgin);
-                    txtDestination.setText(myBooking.Destination);
+        myBooking = bookinglist.get(position);
+        txtReferenceNo.setText(bookinglist.get(position).RefNo);
+        txtClientId.setText(String.valueOf(myBooking.ClientID));
+        txtClient.setText(myBooking.ClientName);
+        txtContactPerson.setText(bookinglist.get(position).ContactPerson);
+        txtContactNo.setText(bookinglist.get(position).ContactNumber);
+        txtOrgin.setText(bookinglist.get(position).Orgin);
+        txtDestination.setText(bookinglist.get(position).Destination);
 
 
-                    txtPiecesCount.setText(String.valueOf(myBooking.PicesCount));
-                    txtWeight.setText(String.valueOf(myBooking.Weight));
-                    txtBillType.setText(myBooking.BillType);
-                    txtLoadType.setText(myBooking.LoadType);
-                    txtReqTime.setText(myBooking.PickUpReqDT.toString("HH:mm"));
-                    txtCloseTime.setText(myBooking.OfficeUpTo.toString("HH:mm"));
-                   //txtRReqTime.setText(String.format("%R",(DateTime.now().minuteOfHour()-myBooking.PickUpReqDT)));
-                   // txtRCloseTime.setText(DateTime.now()-myBooking.OfficeUpTo);
+        txtPiecesCount.setText(String.valueOf(bookinglist.get(position).PicesCount));
+        txtWeight.setText(String.valueOf(bookinglist.get(position).Weight));
+        txtBillType.setText(bookinglist.get(position).BillType);
+        txtLoadType.setText(bookinglist.get(position).LoadType);
+        txtLoadType.setVisibility(View.INVISIBLE);
+        DateTimeFormatter fmtRT = DateTimeFormat.forPattern("HH:mm");
+        String dateStringRT = fmtRT.print(DateTime.parse(bookinglist.get(position).PickUpReqDT));
+
+        txtReqTime.setText(dateStringRT);
+        txtCloseTime.setText(bookinglist.get(position).OfficeUpTo.toString("HH:mm"));
+
+        //txtRReqTime.setText(String.format("%R",(DateTime.now().minuteOfHour()-myBooking.PickUpReqDT)));
+        // txtRCloseTime.setText(DateTime.now()-myBooking.OfficeUpTo);
 
 
-                    txtSpecialInst.setText(myBooking.SpecialInstruction);
+        txtSpecialInst.setText(bookinglist.get(position).SpecialInstruction);
 
 
+        ConsigneeLatitude = myBooking.Latitude;
+        ConsigneeLongitude = myBooking.Longitude;
+
+        if (bookinglist.get(position).BillType.equals("A"))
+            txtBillType.setText("On Account");
+        else if (bookinglist.get(position).BillType.equals("C"))
+            txtBillType.setText("Cash");
+        else if (bookinglist.get(position).BillType.equals("E"))
+            txtBillType.setText("External Billing");
+        else if (bookinglist.get(position).BillType.equals("F"))
+            txtBillType.setText("Free of Cost");
+        else if (bookinglist.get(position).BillType.equals("COD"))
+            txtBillType.setText("Cash on Delivery");
+        else if (bookinglist.get(position).BillType.equals("FOD"))
+            txtBillType.setText("Freight on Delivery");
+        else
+            txtBillType.setText("Contact Admin");
 
 
-                    ConsigneeLatitude = myBooking.Latitude;
-                    ConsigneeLongitude = myBooking.Longitude;
+//        if (bundle != null)
+//        {
+//            for (int i = 0; i < GlobalVar.GV().myBookingList.size(); i++)
+//            {
+//                int bid = Integer.parseInt(bundle.getString("ID"));
+//
+//                int bod = GlobalVar.GV().myBookingList.get(i).ID;
+//
+//
+//                if (GlobalVar.GV().myBookingList.get(i).ID == Integer.parseInt(bundle.getString("ID")) )
+//                {
+//                    BookingId=GlobalVar.GV().myBookingList.get(i).ID;
+//                    myBooking = GlobalVar.GV().myBookingList.get(i);
+//                    txtReferenceNo.setText(myBooking.RefNo);
+//                    txtClientId.setText(String.valueOf(myBooking.ClientID));
+//                    txtClient.setText(myBooking.ClientName);
+//                    txtContactPerson.setText(myBooking.ContactPerson);
+//                    txtContactNo.setText(myBooking.ContactNumber);
+//                    txtOrgin.setText(myBooking.Orgin);
+//                    txtDestination.setText(myBooking.Destination);
+//
+//
+//                    txtPiecesCount.setText(String.valueOf(myBooking.PicesCount));
+//                    txtWeight.setText(String.valueOf(myBooking.Weight));
+//                    txtBillType.setText(myBooking.BillType);
+//                    txtLoadType.setText(myBooking.LoadType);
+//                    txtReqTime.setText(myBooking.PickUpReqDT.toString("HH:mm"));
+//                    txtCloseTime.setText(myBooking.OfficeUpTo.toString("HH:mm"));
+//                   //txtRReqTime.setText(String.format("%R",(DateTime.now().minuteOfHour()-myBooking.PickUpReqDT)));
+//                   // txtRCloseTime.setText(DateTime.now()-myBooking.OfficeUpTo);
+//
+//
+//                    txtSpecialInst.setText(myBooking.SpecialInstruction);
+//
+//
+//
+//
+//                    ConsigneeLatitude = myBooking.Latitude;
+//                    ConsigneeLongitude = myBooking.Longitude;
+//
+//
+//                    break;
+//                }
+//            }
+//
+//
+//        }
 
 
-                    break;
-                }
-            }
+        if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION)
+                        == PackageManager.PERMISSION_GRANTED) {
+
+            requestLocation();
 
 
-        }
-
-
-        LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        android.location.LocationListener locationListener = new android.location.LocationListener()
-        {
-            @Override
-            public void onLocationChanged(Location location)
-            {
-                if (now != null)
-                    now.remove();
-
-                Latitude = location.getLatitude();
-                Longitude = location.getLongitude();
-
-                // Creating a LatLng object for the current location
-                latLng = new LatLng(Latitude, Longitude);
-                BitmapDescriptor icon = BitmapDescriptorFactory.fromResource(R.drawable.currentlocation);
-                now = mMap.addMarker(new MarkerOptions().position(latLng)
-                        .icon(icon));
-//                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng,12));
-            }
-
-            @Override
-            public void onStatusChanged(String provider, int status, Bundle extras)           {            }
-
-            @Override
-            public void onProviderEnabled(String provider){}
-
-            @Override
-            public void onProviderDisabled(String provider) {            }
-        };
-
-        if (!GlobalVar.GV().checkPermission(this, GlobalVar.PermissionType.AccessFindLocation))
-        {
-            GlobalVar.GV().askPermission(this, GlobalVar.PermissionType.AccessFindLocation);
+        } else {
+            ActivityCompat.requestPermissions(BookingDetailActivity.this,
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                    1);
             finish();
         }
-        else
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,500,1,locationListener);
+
     }
 
-    public void CallConsignee(View view)
-    {
-        GlobalVar.GV().makeCall(txtContactNo.getText().toString());
+
+    private void requestLocation() {
+        Location location = GlobalVar.getLastKnownLocation(getApplicationContext());
+        if (location != null) {
+            Latitude = location.getLatitude();
+            Longitude = location.getLongitude();
+
+            if (now != null)
+                now.remove();
+
+            // Creating a LatLng object for the current location
+            LatLng latLng = new LatLng(Latitude, Longitude);
+            GlobalVar.GV().currentLocation = latLng;
+
+
+        }
     }
 
-    public void Delivered(View view)
-    {
+
+    public void CallConsignee(View view) {
+        GlobalVar.GV().makeCall(txtContactNo.getText().toString(), getWindow().getDecorView().getRootView(),
+                BookingDetailActivity.this);
+    }
+
+    public void Delivered(View view) {
         //Status is Pickup
-        DBConnections dbConnections = new DBConnections(GlobalVar.GV().context,GlobalVar.GV().rootView);
-        dbConnections.UpdateBookingStatus(BookingId,3) ;
+        DBConnections dbConnections = new DBConnections(getApplicationContext(), null);
+        dbConnections.UpdateBookingStatus(BookingId, 3, view, getApplicationContext());
+        dbConnections.close();
+
+        Intent intent = new Intent(BookingDetailActivity.this, PickUpActivity.class);
+        Bundle bundle = new Bundle();
+        intent.putParcelableArrayListExtra("value", bookinglist);
+        bundle.putString("class", "BookingDetailAcyivity");
+        bundle.putInt("position", position);
+        intent.putExtras(bundle);
+        startActivityForResult(intent, 0);
         //To do need to call API
     }
-    public void AcceptClick(View view)
-    {
+
+    public void AcceptClick(View view) {
         //Status is Accepted
-        DBConnections dbConnections = new DBConnections(GlobalVar.GV().context,GlobalVar.GV().rootView);
-         dbConnections.UpdateBookingStatus(BookingId,1) ;
+        DBConnections dbConnections = new DBConnections(getApplicationContext(), null);
+        dbConnections.UpdateBookingStatus(BookingId, 1, view, getApplicationContext());
+        dbConnections.close();
         // To Do need to call API to Update status in server
     }
 
-    public void RejectClick(View view)
-    {
+    public void RejectClick(View view) {
         //Status is Rejected
-        DBConnections dbConnections = new DBConnections(GlobalVar.GV().context,GlobalVar.GV().rootView);
-        dbConnections.UpdateBookingStatus(BookingId,2) ;
+        DBConnections dbConnections = new DBConnections(getApplicationContext(), null);
+        dbConnections.UpdateBookingStatus(BookingId, 2, view, getApplicationContext());
+        dbConnections.close();
         // To Do need to call API to Update status in server
     }
+
     @Override
-    public void onMapReady(GoogleMap googleMap)
-    {
+    public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-        mMap.setMapType(GoogleMap.MAP_TYPE_SATELLITE);
-//        mMap.setOnMarkerClickListener(this);
+        GlobalVar.GV().ChangeMapSettings(mMap, BookingDetailActivity.this, getWindow().getDecorView().getRootView());
 
-        mMap.setMapType(GoogleMap.MAP_TYPE_HYBRID);
-//        mMap.setTrafficEnabled(true);
-        mMap.getUiSettings().setZoomControlsEnabled(true);
-        mMap.getUiSettings().setZoomGesturesEnabled(true);
-        mMap.getUiSettings().setCompassEnabled(true);
-        mMap.getUiSettings().setIndoorLevelPickerEnabled(true);
-        mMap.getUiSettings().setMapToolbarEnabled(true);
-        mMap.getUiSettings().setMyLocationButtonEnabled(true);
-        mMap.getUiSettings().setScrollGesturesEnabled(true);
-        mMap.getUiSettings().setTiltGesturesEnabled(true);
-        mMap.getUiSettings().setRotateGesturesEnabled(true);
-
-        if (!GlobalVar.GV().checkPermission(GlobalVar.GV().activity, GlobalVar.PermissionType.Camera))
-        {
-            GlobalVar.GV().ShowSnackbar(mainRootView, getString(R.string.NeedCameraPermission), GlobalVar.AlertType.Error);
-            GlobalVar.GV().askPermission(GlobalVar.GV().activity, GlobalVar.PermissionType.Camera);
-        }
-        else
-            mMap.setMyLocationEnabled(true);
-//        ShowShipmentMarker();
+        BitmapDescriptor icon = BitmapDescriptorFactory.fromResource(R.drawable.currentlocation);
+        now = mMap.addMarker(new MarkerOptions().position(GlobalVar.GV().currentLocation)
+                .icon(icon)
+                .title(getString(R.string.MyLocation)));
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+        if (requestCode == 0) {
+            if (resultCode == Activity.RESULT_OK) {
+                int result = data.getIntExtra("result", -1);
+                if (result == 0) {
+                    Intent returnIntent = new Intent();
+                    returnIntent.putExtra("result", 0);
+                    setResult(Activity.RESULT_OK, returnIntent);
+                    finish();
+                }
+            }
+            if (resultCode == Activity.RESULT_CANCELED) {
+                //Write your code if there's no result
+            }
+        }
+    }//onActivityResult
 
 }

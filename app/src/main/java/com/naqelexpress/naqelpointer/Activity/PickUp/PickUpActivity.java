@@ -1,36 +1,44 @@
 package com.naqelexpress.naqelpointer.Activity.PickUp;
 
+import android.Manifest;
+import android.app.Activity;
+import android.app.ActivityManager;
+import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.TabLayout;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
 
-import com.naqelexpress.naqelpointer.Activity.Waybill.WaybillPlanActivity;
+import com.naqelexpress.naqelpointer.Activity.Booking.Booking;
 import com.naqelexpress.naqelpointer.Activity.WaybillMeasurments.WaybillMeasurementActivity;
-import com.naqelexpress.naqelpointer.GlobalVar;
 import com.naqelexpress.naqelpointer.Classes.JsonSerializerDeserializer;
-import com.naqelexpress.naqelpointer.Classes.MainActivity;
+import com.naqelexpress.naqelpointer.DB.DBConnections;
 import com.naqelexpress.naqelpointer.DB.DBObjects.PickUp;
 import com.naqelexpress.naqelpointer.DB.DBObjects.PickUpDetail;
-import com.naqelexpress.naqelpointer.DB.DBObjects.Station;
+import com.naqelexpress.naqelpointer.GlobalVar;
 import com.naqelexpress.naqelpointer.JSON.Request.BringPickUpDataRequest;
+import com.naqelexpress.naqelpointer.JSON.Request.CheckWaybillAlreadyPickedUpRequest;
 import com.naqelexpress.naqelpointer.JSON.Results.BringPickUpDataResult;
 import com.naqelexpress.naqelpointer.R;
 
 import org.joda.time.DateTime;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -39,71 +47,42 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
 
-public class PickUpActivity
-        extends MainActivity
-{
+public class PickUpActivity extends AppCompatActivity {
+
     PickUpFirstFragment firstFragment;
     PickUpSecondFragment secondFragment;
     DateTime TimeIn;
     private Bundle bundle;
+    ArrayList<Booking> bookinglist;
 
-    //    FloatingActionButton SaveButton, CloseButton, OptionsButton;
-    //    TextView txtSave, txtClose;
-    //    Animation ShowButtonAnimation, HideButtonAnimation, ShowLayoutAnimation, HideLayoutAnimation;
-    //    ConstraintLayout SaveLayout,CloseLayout;
+    int position;
+    String class_;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState)
-    {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if(Created)
-            return;
-        Created = true;
+
         setContentView(R.layout.pickup);
 
-//        OptionsButton = (FloatingActionButton) findViewById(R.id.btnOptions);
-//        SaveButton = (FloatingActionButton) findViewById(R.id.btnShowSelectedShipments);
-//        CloseButton = (FloatingActionButton) findViewById(R.id.btnClose);
-//        txtSave = (TextView) findViewById(R.id.txtSave);
-//        txtClose = (TextView) findViewById(R.id.txtShowShipments);
 
-//        ShowButtonAnimation = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.show_button);
-//        HideButtonAnimation = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.hide_button);
-//        ShowLayoutAnimation = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.show_layout);
-//        HideLayoutAnimation = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.hide_layout);
-//
-//        OptionsButton.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                FloatingPressed();
-//            }
-//        });
-//        SaveButton.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                FloatingPressed();
-//                SaveData();
-//            }
-//        });
-//
-//        CloseButton.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                FloatingPressed();
-//                CloseActivity();
-//            }
-//        });
+        Bundle bundle = getIntent().getExtras();
+        class_ = bundle.getString("class");
+
+        if (class_.equals("BookingDetailAcyivity")) {
+            position = bundle.getInt("position");
+            bookinglist = getIntent().getParcelableArrayListExtra("value");
+        }
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        // Create the adapter that will return a fragment for each of the three
-        // primary sections of the activity.
         SectionsPagerAdapter mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
 
         // Set up the ViewPager with the sections adapter.
         ViewPager mViewPager = (ViewPager) findViewById(R.id.container);
         mViewPager.setAdapter(mSectionsPagerAdapter);
+        mViewPager.setOffscreenPageLimit(2);
 
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(mViewPager);
@@ -112,305 +91,306 @@ public class PickUpActivity
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu)
-    {
+    public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.pickupmenu,menu);
+        inflater.inflate(R.menu.pickupmenu, menu);
         return super.onCreateOptionsMenu(menu);
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item)
-    {
+    public boolean onOptionsItemSelected(MenuItem item) {
         // Handle item selection
-        switch (item.getItemId())
-        {
+        switch (item.getItemId()) {
             case R.id.mnuBringData:
                 BringPickUpData();
                 return true;
             case R.id.mnuSave:
                 SaveData();
+
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
     }
 
-    private void BringPickUpData()
-    {
-        if (firstFragment != null && !firstFragment.txtWaybillNo.getText().toString().equals(""))
-        {
+    private void BringPickUpData() {
+        GlobalVar.hideKeyboardFrom(getApplicationContext(), getWindow().getDecorView().getRootView());
+        if (firstFragment != null && !firstFragment.txtWaybillNo.getText().toString().equals("")) {
             BringPickUpDataRequest bringPickUpDataRequest = new BringPickUpDataRequest();
             bringPickUpDataRequest.WaybillNo = Integer.parseInt(firstFragment.txtWaybillNo.getText().toString());
             BringPickUpData(bringPickUpDataRequest);
-        }
-        else
-            GlobalVar.GV().ShowSnackbar(mainRootView, "Please enter correct Waybill Number", GlobalVar.AlertType.Warning);
+        } else
+            GlobalVar.GV().ShowSnackbar(getWindow().getDecorView().getRootView(), "Please enter correct Waybill Number", GlobalVar.AlertType.Warning);
     }
 
-    private void SaveData()
-    {
-        if (IsValid())
-        {
-            boolean IsSaved = true;
-            int ClientID = 0;
-            if (firstFragment.txtClientID.getText().toString().length() > 0)
-            {
-                ClientID = Integer.parseInt(firstFragment.txtClientID.getText().toString());
-            }
-            final PickUp pickUp = new PickUp(Integer.parseInt(firstFragment.txtWaybillNo.getText().toString()),
-                    ClientID,
-                    firstFragment.OriginID, firstFragment.DestinationID,
-                    GlobalVar.GV().getIntegerFromString(firstFragment.txtPiecesCount.getText().toString()),
-                    GlobalVar.GV().getDoubleFromString(firstFragment.txtWeight.getText().toString()),
-                    TimeIn, DateTime.now(), firstFragment.txtRefNo.getText().toString(),
-                    String.valueOf(Latitude), String.valueOf(Longitude));
+    private void SaveData() {
+        GlobalVar.hideKeyboardFrom(getApplicationContext(), getWindow().getDecorView().getRootView());
+        if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION)
+                        == PackageManager.PERMISSION_GRANTED) {
 
-            if (GlobalVar.GV().dbConnections.InsertPickUp(pickUp))
-            {
-                int PickUpID = GlobalVar.GV().dbConnections.getMaxID("PickUp");
-                for (int i = 0; i < secondFragment.PickUpBarCodeList.size(); i++)
-                {
-                    PickUpDetail pickUpDetail = new PickUpDetail(secondFragment.PickUpBarCodeList.get(i), PickUpID);
-                    if(!GlobalVar.GV().dbConnections.InsertPickUpDetail(pickUpDetail))
-                    {
-                        GlobalVar.GV().ShowSnackbar(mainRootView,getString(R.string.ErrorWhileSaving), GlobalVar.AlertType.Error);
-                        IsSaved = false;
-                        break;
+            requestLocation();
+        } else {
+            ActivityCompat.requestPermissions(PickUpActivity.this,
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                    1);
+            return;
+        }
+
+        if (IsValid()) {
+
+            CheckWaybillAlreadyPickedUp();
+
+        }
+    }
+
+    private void SaveData(String aftervalidduplicatewaybill) {
+        DBConnections dbConnections = new DBConnections(getApplicationContext(), null);
+
+        boolean IsSaved = true;
+        int ClientID = 0;
+        if (firstFragment.txtClientID.getText().toString().length() > 0) {
+            ClientID = Integer.parseInt(firstFragment.txtClientID.getText().toString());
+        }
+        final PickUp pickUp = new PickUp(Integer.parseInt(firstFragment.txtWaybillNo.getText().toString()),
+                ClientID,
+                firstFragment.OriginID, firstFragment.DestinationID,
+                GlobalVar.GV().getIntegerFromString(firstFragment.txtPiecesCount.getText().toString()),
+                GlobalVar.GV().getDoubleFromString(firstFragment.txtWeight.getText().toString()),
+                TimeIn, DateTime.now(), firstFragment.txtRefNo.getText().toString(),
+                String.valueOf(Latitude), String.valueOf(Longitude));
+
+        int loadtypeid = 0;
+        if (firstFragment.clientdetails.size() > 0) {
+            int pos = firstFragment.Loadtype.getSelectedItemPosition();
+            loadtypeid = Integer.parseInt(firstFragment.clientdetails.get(pos).get("LoadTypeID"));
+        }
+        if (dbConnections.InsertPickUp(pickUp, getApplicationContext(), loadtypeid)) {
+            int PickUpID = dbConnections.getMaxID("PickUp", getApplicationContext());
+            for (int i = 0; i < secondFragment.PickUpBarCodeList.size(); i++) {
+                PickUpDetail pickUpDetail = new PickUpDetail(secondFragment.PickUpBarCodeList.get(i), PickUpID);
+                if (!dbConnections.InsertPickUpDetail(pickUpDetail, getApplicationContext())) {
+                    GlobalVar.GV().ShowSnackbar(getWindow().getDecorView().getRootView(), getString(R.string.ErrorWhileSaving), GlobalVar.AlertType.Error);
+                    IsSaved = false;
+                    break;
+                }
+            }
+
+            if (IsSaved) {
+                //GlobalVar.GV().ShowSnackbar(getWindow().getDecorView().getRootView(), getString(R.string.SaveSuccessfully), GlobalVar.AlertType.Info);
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setTitle("Waybill Measurements")
+                        .setMessage("Do you want to add the dimensions for this shipment?")
+                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int which) {
+                                Intent intent = new Intent(PickUpActivity.this, WaybillMeasurementActivity.class);
+                                Bundle bundle = new Bundle();
+                                bundle.putString("WaybillNo", String.valueOf(pickUp.WaybillNo));
+                                bundle.putString("PiecesCount", String.valueOf(pickUp.PieceCount));
+                                intent.putExtras(bundle);
+                                startActivityForResult(intent, 0);
+
+                            }
+                        })
+                        .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int which) {
+
+                                addwaybillagain();
+                                //  finish();
+                            }
+                        }).setCancelable(false);
+
+                //.setNegativeButton("Cancel",null).setCancelable(false);
+                AlertDialog alertDialog = builder.create();
+                alertDialog.show();
+
+                //finish();
+            } else
+                GlobalVar.GV().ShowSnackbar(getWindow().getDecorView().getRootView(), getString(R.string.NotSaved), GlobalVar.AlertType.Error);
+        } else
+            GlobalVar.GV().ShowSnackbar(getWindow().getDecorView().getRootView(), getString(R.string.ErrorWhileSaving), GlobalVar.AlertType.Error);
+
+        dbConnections.close();
+
+    }
+
+    double Latitude = 0, Longitude = 0;
+
+    private void requestLocation() {
+        Location location = GlobalVar.getLastKnownLocation(getApplicationContext());
+        if (location != null) {
+            Latitude = location.getLatitude();
+            Longitude = location.getLongitude();
+        }
+    }
+
+    private void addwaybillagain() {
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(PickUpActivity.this);
+        builder.setTitle("Info")
+                .setMessage("Do you want to add the Waybill again?")
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int which) {
+                        firstFragment.txtWaybillNo.setText("");
+                        firstFragment.txtPiecesCount.setText("");
+                        secondFragment.PickUpBarCodeList.clear();
+                        secondFragment.adapter.notifyDataSetChanged();
+                        secondFragment.lbTotal.setText("Count : 0");
+                        secondFragment.txtBarCode.setText("");
+                        firstFragment.txtWeight.setText("");
+
                     }
-                }
-
-                if (IsSaved)
-                {
-                    GlobalVar.GV().ShowSnackbar(GlobalVar.GV().rootViewMainPage, getString(R.string.SaveSuccessfully), GlobalVar.AlertType.Info);
-
-                    AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                    builder.setTitle("Waybill Measurements")
-                            .setMessage("Do you want to add the dimensions for this shipment?")
-                            .setPositiveButton("OK",new DialogInterface.OnClickListener()
-                            {
-                                @Override
-                                public void onClick(DialogInterface dialogInterface,int which)
-                                {
-                                    Intent intent = new Intent(GlobalVar.GV().MainContext, WaybillMeasurementActivity.class);
-                                    Bundle bundle = new Bundle();
-                                    bundle.putString("WaybillNo", String.valueOf(pickUp.WaybillNo));
-                                    bundle.putString("PiecesCount", String.valueOf(pickUp.PieceCount));
-                                    intent.putExtras(bundle);
-                                    startActivity(intent);
-
-                                    //Intent waybillMeasurement = new Intent(,WaybillMeasurementActivity.class);
-                                    //startActivity(waybillMeasurement );
-                                    finish();
-                                }
-                            })
-                            .setNegativeButton("Cancel",new DialogInterface.OnClickListener()
-                            {
-                                @Override
-                                public void onClick(DialogInterface dialogInterface,int which)
-                                {
-                                    finish();
-                                }
-                            }).setCancelable(false);
-
-                            //.setNegativeButton("Cancel",null).setCancelable(false);
-                    AlertDialog alertDialog = builder.create();
-                    alertDialog.show();
-
-                    //finish();
-                }
-                else
-                    GlobalVar.GV().ShowSnackbar(mainRootView, getString(R.string.NotSaved), GlobalVar.AlertType.Error);
-            }
-            else
-                GlobalVar.GV().ShowSnackbar(mainRootView,getString(R.string.ErrorWhileSaving), GlobalVar.AlertType.Error);
-        }
+                })
+                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int which) {
+                        if (!isMyServiceRunning(PickUpActivity.class)) {
+                            GlobalVar.GV().ShowSnackbar(getWindow().getDecorView().getRootView(), getString(R.string.SaveSuccessfully), GlobalVar.AlertType.Info);
+                            startService(
+                                    new Intent(PickUpActivity.this,
+                                            com.naqelexpress.naqelpointer.service.PickUp.class));
+                        }
+                        Intent returnIntent = new Intent();
+                        returnIntent.putExtra("result", 0);
+                        setResult(Activity.RESULT_OK, returnIntent);
+                        finish();
+                    }
+                }).setCancelable(false);
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
     }
 
-    private boolean IsValid()
-    {
+    private boolean IsValid() {
         boolean isValid = true;
-        if (firstFragment == null )
-        {
-            GlobalVar.GV().ShowSnackbar(mainRootView,"You have to enter the WaybillNo", GlobalVar.AlertType.Error);
+        if (firstFragment == null) {
+            GlobalVar.GV().ShowSnackbar(getWindow().getDecorView().getRootView(), "You have to enter the WaybillNo", GlobalVar.AlertType.Error);
             isValid = false;
+            return false;
         }
 
-        if (secondFragment == null)
-        {
-            GlobalVar.GV().ShowSnackbar(mainRootView,"You have to scan the piece barcodes", GlobalVar.AlertType.Error);
+        if (secondFragment == null) {
+            GlobalVar.GV().ShowSnackbar(getWindow().getDecorView().getRootView(), "You have to scan the piece barcodes", GlobalVar.AlertType.Error);
             isValid = false;
+            return false;
         }
 
-        if (firstFragment != null)
-        {
-            if (firstFragment.txtWaybillNo.getText().toString().equals(""))
-            {
-                GlobalVar.GV().ShowSnackbar(mainRootView,"You have to enter the Waybill No", GlobalVar.AlertType.Error);
+        if (firstFragment != null) {
+            if (firstFragment.txtWaybillNo.getText().toString().equals("")) {
+                GlobalVar.GV().ShowSnackbar(getWindow().getDecorView().getRootView(), "You have to enter the Waybill No", GlobalVar.AlertType.Error);
                 isValid = false;
+                return false;
             }
 
-            if (firstFragment.OriginID == 0)
-            {
-                GlobalVar.GV().ShowSnackbar(mainRootView,"You have to select the origin", GlobalVar.AlertType.Error);
+            if (firstFragment.OriginID == 0) {
+                GlobalVar.GV().ShowSnackbar(getWindow().getDecorView().getRootView(), "You have to select the origin", GlobalVar.AlertType.Error);
                 isValid = false;
+                return false;
             }
 
-            if (firstFragment.DestinationID == 0)
-            {
-                GlobalVar.GV().ShowSnackbar(mainRootView,"You have to select the destination", GlobalVar.AlertType.Error);
+            if (firstFragment.DestinationID == 0) {
+                GlobalVar.GV().ShowSnackbar(getWindow().getDecorView().getRootView(), "You have to select the destination", GlobalVar.AlertType.Error);
                 isValid = false;
+                return false;
             }
 
             if (firstFragment.txtPiecesCount.getText().toString().equals("") ||
-                    GlobalVar.GV().getIntegerFromString(firstFragment.txtPiecesCount.getText().toString()) <= 0)
-            {
-                GlobalVar.GV().ShowSnackbar(mainRootView,"You have to enter the Pieces Count", GlobalVar.AlertType.Error);
+                    GlobalVar.GV().getIntegerFromString(firstFragment.txtPiecesCount.getText().toString()) <= 0) {
+                GlobalVar.GV().ShowSnackbar(getWindow().getDecorView().getRootView(), "You have to enter the Pieces Count", GlobalVar.AlertType.Error);
                 isValid = false;
+                return false;
             }
 
 
             if (firstFragment.txtPiecesCount.getText().toString().equals("") ||
-                    GlobalVar.GV().getIntegerFromString(firstFragment.txtPiecesCount.getText().toString()) <= 0)
-            {
-                GlobalVar.GV().ShowSnackbar(mainRootView,"You have to enter the Pieces Count", GlobalVar.AlertType.Error);
+                    GlobalVar.GV().getIntegerFromString(firstFragment.txtPiecesCount.getText().toString()) <= 0) {
+                GlobalVar.GV().ShowSnackbar(getWindow().getDecorView().getRootView(), "You have to enter the Pieces Count", GlobalVar.AlertType.Error);
                 isValid = false;
+                return false;
             }
 
             if (firstFragment.txtWeight.getText().toString().equals("") ||
-                    GlobalVar.GV().getDoubleFromString(firstFragment.txtWeight.getText().toString()) <= 0)
-            {
-                GlobalVar.GV().ShowSnackbar(mainRootView,"You have to enter the Weight of the shipment", GlobalVar.AlertType.Error);
+                    GlobalVar.GV().getDoubleFromString(firstFragment.txtWeight.getText().toString()) <= 0) {
+                GlobalVar.GV().ShowSnackbar(getWindow().getDecorView().getRootView(), "You have to enter the Weight of the shipment", GlobalVar.AlertType.Error);
                 isValid = false;
+                return false;
             }
         }
 
-        if (secondFragment != null)
-        {
-            if (secondFragment.PickUpBarCodeList.size() <= 0)
-            {
-                GlobalVar.GV().ShowSnackbar(mainRootView,"You have to scan the piece barcodes", GlobalVar.AlertType.Error);
+        if (secondFragment != null) {
+            if (secondFragment.PickUpBarCodeList.size() <= 0) {
+                GlobalVar.GV().ShowSnackbar(getWindow().getDecorView().getRootView(), "You have to scan the piece barcodes", GlobalVar.AlertType.Error);
                 isValid = false;
+                return false;
             }
 
             int piecesCount = secondFragment.PickUpBarCodeList.size();
-            if (GlobalVar.GV().getIntegerFromString(firstFragment.txtPiecesCount.getText().toString()) != piecesCount)
-            {
-                GlobalVar.GV().ShowSnackbar(mainRootView,"Count of pieces is not matching with piece barcodes scanned.", GlobalVar.AlertType.Error);
+            if (GlobalVar.GV().getIntegerFromString(firstFragment.txtPiecesCount.getText().toString()) != piecesCount) {
+                GlobalVar.GV().ShowSnackbar(getWindow().getDecorView().getRootView(), "Count of pieces is not matching with piece barcodes scanned.", GlobalVar.AlertType.Error);
                 isValid = false;
+                return false;
             }
 
-
-//            if (isValid)
-//            {
-////                try
-////                {
-////
-////                    int piecesCount = Integer.parseInt(String.valueOf(Double.parseDouble(firstFragment.txtPiecesCount.getText().toString())));
-////                    if (secondFragment.PickUpBarCodeList.size() != piecesCount) {
-////                        GlobalVar.GV().ShowSnackbar(mainRootView, "Pieces count is not matching.", GlobalVar.AlertType.Error);
-////                        isValid = false;
-////                    }
-////                }
-////                catch (Exception ex)
-////                {
-////                    ex.printStackTrace();
-////                }
-//            }
         }
 
         return isValid;
     }
 
-//    private void FloatingPressed()
-//    {
-//        if (SaveButton.getVisibility() == View.VISIBLE )
-//        {
-//            SaveButton.setVisibility(View.GONE);
-//            CloseButton.setVisibility(View.GONE);
-//            txtSave.setVisibility(View.GONE);
-//            txtClose.setVisibility(View.GONE);
-//
-//            SaveButton.startAnimation(HideLayoutAnimation);
-//            CloseButton.startAnimation(HideLayoutAnimation);
-//            txtSave.startAnimation(HideLayoutAnimation);
-//            txtClose.startAnimation(HideLayoutAnimation);
-//        }
-//        else
-//        {
-//            SaveButton.setVisibility(View.VISIBLE);
-//            CloseButton.setVisibility(View.VISIBLE);
-//            txtSave.setVisibility(View.VISIBLE);
-//            txtClose.setVisibility(View.VISIBLE);
-//
-//            SaveButton.startAnimation(ShowLayoutAnimation);
-//            CloseButton.startAnimation(ShowLayoutAnimation);
-//            txtSave.startAnimation(ShowLayoutAnimation);
-//            txtClose.startAnimation(ShowLayoutAnimation);
-//        }
-//    }
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 
-    /**
-     * A placeholder fragment containing a simple view.
-     */
-    public static class PlaceholderFragment extends Fragment
-    {
-
-        public PlaceholderFragment(){}
-
-        /**
-         * Returns a new instance of this fragment for the given section
-         * number.
-         */
-//        public static PlaceholderFragment newInstance(int sectionNumber)
-//        {
-//            PlaceholderFragment fragment = new PlaceholderFragment();
-//            Bundle args = new Bundle();
-//            args.putInt(ARG_SECTION_NUMBER, sectionNumber);
-//            fragment.setArguments(args);
-//            return fragment;
-//        }
-
-        @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                                 Bundle savedInstanceState)
-        {
-            return inflater.inflate(R.layout.pickupfirstfragment, container, false);
+        if (requestCode == 0) {
+            if (resultCode == Activity.RESULT_OK) {
+                int result = data.getIntExtra("result", -1);
+                if (result == 0) {
+                    addwaybillagain();
+                }
+            }
+            if (resultCode == Activity.RESULT_CANCELED) {
+                //Write your code if there's no result
+            }
+        } else {
+            for (Fragment fragment : getSupportFragmentManager().getFragments()) {
+                fragment.onActivityResult(requestCode, resultCode, data);
+            }
         }
     }
 
-    /**
-     * A {@link FragmentPagerAdapter} that returns a fragment corresponding to
-     * one of the sections/tabs/pages.
-     */
-    private class SectionsPagerAdapter extends FragmentPagerAdapter
-    {
-        private SectionsPagerAdapter(FragmentManager fm)
-        {
+
+    private class SectionsPagerAdapter extends FragmentPagerAdapter {
+        private SectionsPagerAdapter(FragmentManager fm) {
             super(fm);
         }
 
         @Override
-        public Fragment getItem(int position)
-        {
-            switch (position)
-            {
+        public Fragment getItem(int pos) {
+
+            Bundle bundle = new Bundle();
+            if (class_.equals("BookingDetailAcyivity")) {
+                bundle.putSerializable("value", bookinglist);
+                bundle.putInt("position", position);
+                bundle.putString("class", "BookingDetailAcyivity");
+            } else
+                bundle.putString("class", "Pickup");
+
+            switch (pos) {
                 case 0:
-                    if (firstFragment == null)
-                    {
+                    if (firstFragment == null) {
                         firstFragment = new PickUpFirstFragment();
+                        firstFragment.setArguments(bundle);
                         return firstFragment;
-                    }
-                    else
+                    } else
                         return firstFragment;
                 case 1:
-                    if (secondFragment == null)
-                    {
+                    if (secondFragment == null) {
                         secondFragment = new PickUpSecondFragment();
+                        secondFragment.setArguments(bundle);
                         return secondFragment;
-                    }
-                    else
-                    {
+                    } else {
                         return secondFragment;
                     }
             }
@@ -423,10 +403,8 @@ public class PickUpActivity
         }
 
         @Override
-        public CharSequence getPageTitle(int position)
-        {
-            switch (position)
-            {
+        public CharSequence getPageTitle(int position) {
+            switch (position) {
                 case 0:
                     return getResources().getString(R.string.PickUpFirstFragment);
                 case 1:
@@ -437,37 +415,37 @@ public class PickUpActivity
     }
 
     @Override
-    public void onBackPressed()
-    {
+    public void onBackPressed() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Exit PickUp")
                 .setMessage("Are you sure you want to exit without saving?")
-                .setPositiveButton("OK",new DialogInterface.OnClickListener()
-                {
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     @Override
-                    public void onClick(DialogInterface dialogInterface,int which)
-                    {
+                    public void onClick(DialogInterface dialogInterface, int which) {
                         PickUpActivity.super.onBackPressed();
                     }
-                }).setNegativeButton("Cancel",null).setCancelable(false);
+                }).setNegativeButton("Cancel", null).setCancelable(false);
         AlertDialog alertDialog = builder.create();
         alertDialog.show();
     }
 
     //--------------Bring Data in PickUp -------------------------------
-    public void BringPickUpData(BringPickUpDataRequest bringPickUpDataRequest )
-    {
-        if (!GlobalVar.GV().HasInternetAccess)
-            return;
-
+    public void BringPickUpData(BringPickUpDataRequest bringPickUpDataRequest) {
         String jsonData = JsonSerializerDeserializer.serialize(bringPickUpDataRequest, true);
         new BringPickUpData().execute(jsonData);
     }
 
-    private class BringPickUpData extends AsyncTask<String,Void,String>
-    {
+    private class BringPickUpData extends AsyncTask<String, Void, String> {
         String result = "";
         StringBuffer buffer;
+        ProgressDialog progressDialog;
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            progressDialog = ProgressDialog.show(PickUpActivity.this, "Please wait.", "Downloading your pickup request"
+                    , true);
+        }
 
         @Override
         protected String doInBackground(String... params) {
@@ -476,9 +454,8 @@ public class PickUpActivity
             OutputStream dos = null;
             InputStream ist = null;
 
-            try
-            {
-                URL url = new URL(GlobalVar.GV().NaqelPointerAPILink + "BringPickUpData");
+            try {
+                URL url = new URL(GlobalVar.GV().NaqelPointerAPILink + "BringPickUpDataForClient");
                 httpURLConnection = (HttpURLConnection) url.openConnection();
 
                 httpURLConnection.setRequestMethod("POST");
@@ -497,19 +474,14 @@ public class PickUpActivity
                 BufferedReader reader = new BufferedReader(new InputStreamReader(ist));
                 buffer = new StringBuffer();
 
-                while ((line = reader.readLine()) != null)
-                {
+                while ((line = reader.readLine()) != null) {
                     buffer.append(line);
                 }
 
                 return String.valueOf(buffer);
-            }
-            catch (Exception e)
-            {
+            } catch (Exception e) {
                 e.printStackTrace();
-            }
-            finally
-            {
+            } finally {
                 try {
                     if (ist != null)
                         ist.close();
@@ -530,44 +502,216 @@ public class PickUpActivity
         }
 
         @Override
-        protected void onPostExecute(String finalJson)
-        {
+        protected void onPostExecute(String finalJson) {
             super.onPostExecute(String.valueOf(finalJson));
-            if (firstFragment!= null)
-            {
-                BringPickUpDataResult bringPickUpDataResult = new BringPickUpDataResult(finalJson);
-                firstFragment.txtClientID.setText(String.valueOf(bringPickUpDataResult.ClientID));
+            if (finalJson != null) {
 
-                for(Station station : GlobalVar.GV().StationList)
-                {
-                    if(station.ID == bringPickUpDataResult.OriginStationID)
-                    {
-                        firstFragment.OriginID = bringPickUpDataResult.OriginStationID;
+                if (firstFragment != null) {
+                    BringPickUpDataResult bringPickUpDataResult = new BringPickUpDataResult(finalJson);
+                    firstFragment.txtClientID.setText(String.valueOf(bringPickUpDataResult.ClientID));
+                    int i = 0;
+                    for (Integer station : firstFragment.StationList) {
+                        if (station == bringPickUpDataResult.OriginStationID) {
+                            firstFragment.OriginID = bringPickUpDataResult.OriginStationID;
 
-                        if (GlobalVar.GV().IsEnglish())
-                            firstFragment.txtOrigin.setText(station.Code + " : " + station.Name);
-                        else
-                            firstFragment.txtOrigin.setText(station.Code + " : " + station.FName);
-                        break;
+                            if (GlobalVar.GV().IsEnglish())
+                                firstFragment.txtOrigin.setText(firstFragment.StationNameList.get(i));
+                            else
+                                firstFragment.txtOrigin.setText(firstFragment.StationNameList.get(i));
+                            break;
+                        }
+                        i++;
                     }
+                    i = 0;
+                    for (Integer station : firstFragment.StationList) {
+                        if (station == bringPickUpDataResult.DestinationStationID) {
+                            firstFragment.DestinationID = bringPickUpDataResult.DestinationStationID;
+
+                            if (GlobalVar.GV().IsEnglish())
+                                firstFragment.txtDestination.setText(firstFragment.StationNameList.get(i));
+                            else
+                                firstFragment.txtDestination.setText(firstFragment.StationNameList.get(i));
+                            break;
+                        }
+                        i++;
+                    }
+                    firstFragment.txtPiecesCount.setText(String.valueOf(bringPickUpDataResult.PiecesCount));
+                    firstFragment.txtWeight.setText(String.valueOf(bringPickUpDataResult.Weight));
+                }
+            } else
+                GlobalVar.GV().ShowSnackbar(getWindow().getDecorView().getRootView(), "Something went wrong,please try again later", GlobalVar.AlertType.Error);
+
+            progressDialog.dismiss();
+        }
+    }
+
+
+    public void CheckWaybillAlreadyPickedUp() {
+
+        String WaybillNo = firstFragment.txtWaybillNo.getText().toString();
+        if (WaybillNo.length() > 7) {
+            CheckWaybillAlreadyPickedUpRequest checkWaybillAlreadyPickedUpRequest = new CheckWaybillAlreadyPickedUpRequest();
+            checkWaybillAlreadyPickedUpRequest.WaybillNo = Integer.parseInt(WaybillNo);
+            String jsonData = JsonSerializerDeserializer.serialize(checkWaybillAlreadyPickedUpRequest, true);
+            new CheckWaybillAlreadyPickedUpInSystem().execute(jsonData);
+        }
+    }
+
+    private class CheckWaybillAlreadyPickedUpInSystem extends AsyncTask<String, Void, String> {
+        String result = "";
+        StringBuffer buffer;
+        ProgressDialog progressDialog;
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            GlobalVar.hideKeyboardFrom(getApplicationContext(), getWindow().getDecorView().getRootView());
+            progressDialog = ProgressDialog.show(PickUpActivity.this, "Please wait.", "Cross check WaybillNo ", true);
+        }
+
+        @Override
+        protected String doInBackground(String... params) {
+            String jsonData = params[0];
+            HttpURLConnection httpURLConnection = null;
+            OutputStream dos = null;
+            InputStream ist = null;
+
+            try {
+                URL url = new URL(GlobalVar.GV().NaqelPointerAPILink + "CheckWaybillAlreadyPickedUp");
+                httpURLConnection = (HttpURLConnection) url.openConnection();
+
+                httpURLConnection.setRequestMethod("POST");
+                httpURLConnection.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+                httpURLConnection.setDoInput(true);
+                httpURLConnection.setDoOutput(true);
+                httpURLConnection.connect();
+
+                dos = httpURLConnection.getOutputStream();
+                httpURLConnection.getOutputStream();
+                dos.write(jsonData.getBytes());
+
+                ist = httpURLConnection.getInputStream();
+                String line;
+                BufferedReader reader = new BufferedReader(new InputStreamReader(ist));
+                buffer = new StringBuffer();
+
+                while ((line = reader.readLine()) != null) {
+                    buffer.append(line);
                 }
 
-                for(Station station : GlobalVar.GV().StationList)
-                {
-                    if(station.ID == bringPickUpDataResult.DestinationStationID)
-                    {
-                        firstFragment.DestinationID = bringPickUpDataResult.DestinationStationID;
-
-                        if (GlobalVar.GV().IsEnglish())
-                            firstFragment.txtDestination.setText(station.Code + " : " + station.Name);
-                        else
-                            firstFragment.txtDestination.setText(station.Code + " : " + station.FName);
-                        break;
-                    }
+                return String.valueOf(buffer);
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                try {
+                    if (ist != null)
+                        ist.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
-                firstFragment.txtPiecesCount.setText(String.valueOf(bringPickUpDataResult.PiecesCount));
-                firstFragment.txtWeight.setText(String.valueOf(bringPickUpDataResult.Weight));
+                try {
+                    if (dos != null)
+                        dos.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                if (httpURLConnection != null)
+                    httpURLConnection.disconnect();
+                result = String.valueOf(buffer);
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(String finalJson) {
+            super.onPostExecute(String.valueOf(finalJson));
+
+            if (finalJson != null) {
+                JSONObject jsonObject;
+                try {
+                    jsonObject = new JSONObject(finalJson);
+                    if (Boolean.parseBoolean(jsonObject.getString("hasPickedUp"))) {
+                        GlobalVar.GV().ShowSnackbar(getWindow().getDecorView().getRootView(), "This WaybillNo Already Picked Up",
+                                GlobalVar.AlertType.Error, true, getApplicationContext());
+                        //             DuplicateWaybillNo("Info", "This WaybillNo Already Picked Up");
+                    } else
+                        SaveData("");
+
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                    SaveData("");
+                }
+            } else
+                SaveData("");
+            progressDialog.dismiss();
+        }
+    }
+
+    private void DuplicateWaybillNo(String title, String message) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(PickUpActivity.this);
+        builder.setTitle(title)
+                .setMessage(message)
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int which) {
+                        // SaveData();
+
+                    }
+                })
+                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+
+                    }
+                })
+                .setCancelable(false);
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
+    }
+
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        getSupportFragmentManager().putFragment(outState, "firstFragment", firstFragment);
+        getSupportFragmentManager().putFragment(outState, "secondFragment", secondFragment);
+        outState.putInt("EmployID", GlobalVar.GV().EmployID);
+        outState.putInt("UserID", GlobalVar.GV().UserID);
+        outState.putInt("StationID", GlobalVar.GV().StationID);
+        outState.putString("EmployMobileNo", GlobalVar.GV().EmployMobileNo);
+        outState.putString("EmployName", GlobalVar.GV().EmployName);
+        outState.putString("EmployStation", GlobalVar.GV().EmployStation);
+        outState.putParcelable("currentSettings", GlobalVar.GV().currentSettings);
+        outState.putInt("currentSettingsID", GlobalVar.GV().currentSettings.ID);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        if (savedInstanceState != null) {
+            firstFragment = (PickUpFirstFragment) getSupportFragmentManager().getFragment(savedInstanceState, "firstFragment");
+            secondFragment = (PickUpSecondFragment) getSupportFragmentManager().getFragment(savedInstanceState, "secondFragment");
+            GlobalVar.GV().EmployID = savedInstanceState.getInt("EmployID");
+            GlobalVar.GV().UserID = savedInstanceState.getInt("UserID");
+            GlobalVar.GV().StationID = savedInstanceState.getInt("StationID");
+            GlobalVar.GV().EmployMobileNo = savedInstanceState.getString("EmployMobileNo");
+            GlobalVar.GV().EmployName = savedInstanceState.getString("EmployName");
+            GlobalVar.GV().EmployStation = savedInstanceState.getString("EmployStation");
+            GlobalVar.GV().currentSettings = savedInstanceState.getParcelable("currentSettings");
+            GlobalVar.GV().currentSettings.ID = savedInstanceState.getInt("currentSettingsID");
+        }
+    }
+
+    private boolean isMyServiceRunning(Class<?> serviceClass) {
+        ActivityManager manager = (ActivityManager) getApplication()
+                .getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager
+                .getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceClass.getName().equals(service.service.getClassName())) {
+                return true;
             }
         }
+        return false;
     }
 }

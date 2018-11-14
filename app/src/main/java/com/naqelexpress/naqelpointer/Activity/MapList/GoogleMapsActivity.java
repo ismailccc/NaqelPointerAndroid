@@ -28,8 +28,7 @@ import java.util.List;
 
 public class GoogleMapsActivity
         extends FragmentActivity
-        implements OnMapReadyCallback , DirectionFinderListener
-{
+        implements OnMapReadyCallback, DirectionFinderListener {
     private GoogleMap mMap;
     Marker now;
     private Button btnFindPath;
@@ -41,8 +40,7 @@ public class GoogleMapsActivity
     private ProgressDialog progressDialog;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState)
-    {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.googlemap);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
@@ -73,8 +71,7 @@ public class GoogleMapsActivity
 //        }
     }
 
-    private void sendRequest()
-    {
+    private void sendRequest() {
 //        String origin = etOrigin.getText().toString();
 //        String destination = etDestination.getText().toString();
 //        if (origin.isEmpty()) {
@@ -103,8 +100,7 @@ public class GoogleMapsActivity
     }
 
     @Override
-    public void onMapReady(GoogleMap googleMap)
-    {
+    public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
         mMap.setMapType(googleMap.MAP_TYPE_SATELLITE);
 
@@ -116,7 +112,7 @@ public class GoogleMapsActivity
 //                            .title("Location Details")
 //                            .icon(BitmapDescriptorFactory.fromResource(R.drawable.marker)));
 
-        LatLng myWork = new LatLng(1,1);
+        LatLng myWork = new LatLng(1, 1);
 
 
         //Get Current Location
@@ -132,59 +128,48 @@ public class GoogleMapsActivity
         //http://maps.googleapis.com/maps/api/directions/json?origin=24.692445,%2046.839279&destination=24.657279,%2046.788840&sensor=false&units=metric&mode=driving
         //mMap.addPolyline(new PolylineOptions().add(myHome,myWork).width(10).color(getResources().getColor(R.color.NaqelRed,null)));
 
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(myHome,18));
-        if (GlobalVar.GV().checkPermission(GlobalVar.GV().activity, GlobalVar.PermissionType.Camera) == false)
-        {
-            GlobalVar.GV().ShowSnackbar(GlobalVar.GV().rootView, getString(R.string.NeedCameraPermission), GlobalVar.AlertType.Error);
-            GlobalVar.GV().askPermission(GlobalVar.GV().activity, GlobalVar.PermissionType.Camera);
-        }
-        else
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(myHome, 18));
+        if (GlobalVar.GV().checkPermission(GoogleMapsActivity.this, GlobalVar.PermissionType.Camera) == false) {
+            GlobalVar.GV().ShowSnackbar(getWindow().getDecorView().getRootView(), getString(R.string.NeedCameraPermission), GlobalVar.AlertType.Error);
+            GlobalVar.GV().askPermission(GoogleMapsActivity.this, GlobalVar.PermissionType.Camera);
+        } else
             mMap.setMyLocationEnabled(true);
         //mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(myHome,18));
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(myHome, 18));
     }
 
     @Override
-    public void onDirectionFinderStart()
-    {
+    public void onDirectionFinderStart() {
         progressDialog = ProgressDialog.show(this, "Please wait.",
                 "Finding direction..!", true);
 
-        if (originMarkers != null)
-        {
-            for (Marker marker : originMarkers)
-            {
+        if (originMarkers != null) {
+            for (Marker marker : originMarkers) {
                 marker.remove();
             }
         }
 
-        if (destinationMarkers != null)
-        {
-            for (Marker marker : destinationMarkers)
-            {
+        if (destinationMarkers != null) {
+            for (Marker marker : destinationMarkers) {
                 marker.remove();
             }
         }
 
-        if (polylinePaths != null)
-        {
-            for (Polyline polyline:polylinePaths )
-            {
+        if (polylinePaths != null) {
+            for (Polyline polyline : polylinePaths) {
                 polyline.remove();
             }
         }
     }
 
     @Override
-    public void onDirectionFinderSuccess(List<Route> routes)
-    {
+    public void onDirectionFinderSuccess(List<Route> routes) {
         progressDialog.dismiss();
         polylinePaths = new ArrayList<>();
         originMarkers = new ArrayList<>();
         destinationMarkers = new ArrayList<>();
 
-        for (Route route : routes)
-        {
+        for (Route route : routes) {
             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(route.startLocation, 14));
             originMarkers.add(mMap.addMarker(new MarkerOptions()
 //                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.marker))
@@ -226,16 +211,13 @@ public class GoogleMapsActivity
 //        }
 //    }
 
-    public void FindPath(View view)
-    {
+    public void FindPath(View view) {
         sendRequest();
     }
 
     //@Override
-    public void onLocationChanged(Location location)
-    {
-        if(now != null)
-        {
+    public void onLocationChanged(Location location) {
+        if (now != null) {
             now.remove();
         }
 

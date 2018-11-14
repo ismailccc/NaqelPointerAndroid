@@ -4,6 +4,7 @@
         <item name="colorPrimary">@color/NaqelBlue</item>
         <item name="colorPrimaryDark">@color/NaqelBlue</item>
         <item name="colorAccent">@color/NaqelBlue</item>
+        <item name="cardViewStyle">@style/CardView</item>
     </style>
 
     <style name="NoActivityTitle">
@@ -87,7 +88,15 @@
     <style name="DialogAnimations" />
 
     <style name="DialogAnimations.SmileWindow">
-        <item name="@android:windowEnterAnimation">@anim/slide_in_bottom</item>
-        <item name="@android:windowExitAnimation">@anim/slide_out_top</item>
+        <item name="android:windowEnterAnimation">@anim/slide_in_bottom</item>
+        <item name="android:windowExitAnimation">@anim/slide_out_top</item>
     </style>
+
+    <style name="trans" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowActionBar">false</item>
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowContentOverlay">@null</item>
+    </style>
+
 </resources>

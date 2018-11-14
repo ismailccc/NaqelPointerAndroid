@@ -1,11 +1,11 @@
 package com.naqelexpress.naqelpointer.Activity.Breaks;
 
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 
-import com.naqelexpress.naqelpointer.Classes.MainActivity;
 import com.naqelexpress.naqelpointer.R;
 
-public class BreaksActivity extends MainActivity
+public class BreaksActivity extends AppCompatActivity
 {
     @Override
     protected void onCreate(Bundle savedInstanceState) {

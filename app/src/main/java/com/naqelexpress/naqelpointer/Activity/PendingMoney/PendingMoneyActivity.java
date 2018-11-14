@@ -3,14 +3,14 @@ package com.naqelexpress.naqelpointer.Activity.PendingMoney;
 import android.app.ProgressDialog;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 
 import com.baoyz.swipemenulistview.SwipeMenuListView;
-import com.naqelexpress.naqelpointer.GlobalVar;
 import com.naqelexpress.naqelpointer.Classes.JsonSerializerDeserializer;
-import com.naqelexpress.naqelpointer.Classes.MainActivity;
+import com.naqelexpress.naqelpointer.GlobalVar;
 import com.naqelexpress.naqelpointer.JSON.Request.CheckPendingCODRequest;
 import com.naqelexpress.naqelpointer.JSON.Results.CheckPendingCODResult;
 import com.naqelexpress.naqelpointer.R;
@@ -25,77 +25,69 @@ import java.net.URL;
 import java.util.ArrayList;
 
 public class PendingMoneyActivity
-        extends MainActivity
-{
+        extends AppCompatActivity {
     private SwipeMenuListView listview;
     private PendingListAdapter adapter;
     Button btnCheck;
     EditText txtEmploy;
+    public static ArrayList<CheckPendingCODResult> checkPendingCODList;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState)
-    {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if(Created)
-            return;
-        Created = true;
         setContentView(R.layout.pendingmoney);
 
         listview = (SwipeMenuListView) findViewById(R.id.pendingCODView);
-//        adapter = new PendingListAdapter(getApplicationContext(), GlobalVar.GV().checkPendingCODList);
-//        listview.setAdapter(adapter);
 
         txtEmploy = (EditText) findViewById(R.id.txtEmployID);
         txtEmploy.setText(String.valueOf(GlobalVar.GV().EmployID));
         btnCheck = (Button) findViewById(R.id.btnCheck);
-        btnCheck.setOnClickListener(new View.OnClickListener()
-        {
+        checkPendingCODList = new ArrayList<>();
+
+        btnCheck.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v)
-            {
-                GlobalVar.GV().checkPendingCODList = new ArrayList<>();
-                if(!txtEmploy.getText().toString().equals(""))
-                {
+            public void onClick(View v) {
+
+                if (!txtEmploy.getText().toString().equals("")) {
                     CheckPendingCODRequest checkPendingCODRequest = new CheckPendingCODRequest();
                     checkPendingCODRequest.EmployID = Integer.parseInt(txtEmploy.getText().toString());
                     BringPendingMoney(checkPendingCODRequest);
                 }
             }
         });
+        setAdapter();
+    }
+
+    private void setAdapter() {
+        adapter = new PendingListAdapter(getApplicationContext(), checkPendingCODList);
+        listview.setAdapter(adapter);
     }
 
     //------------------------Bring Pending Money -------------------------------
-    public void BringPendingMoney(CheckPendingCODRequest checkCODPendingRequest)
-    {
-        if (!GlobalVar.GV().HasInternetAccess)
-            return;
+    public void BringPendingMoney(CheckPendingCODRequest checkCODPendingRequest) {
 
         String jsonData = JsonSerializerDeserializer.serialize(checkCODPendingRequest, true);
         new BringPendingMoneyList().execute(jsonData);
     }
 
-    private class BringPendingMoneyList extends AsyncTask<String,Void,String>
-    {
+    private class BringPendingMoneyList extends AsyncTask<String, Void, String> {
         private ProgressDialog progressDialog;
         String result = "";
         StringBuffer buffer;
 
         @Override
-        protected void onPreExecute()
-        {
-            progressDialog = ProgressDialog.show(GlobalVar.GV().context, "Please wait.", "Downloading Pending Money Details.", true);
+        protected void onPreExecute() {
+            progressDialog = ProgressDialog.show(PendingMoneyActivity.this, "Please wait.", "Downloading Pending Money Details.", true);
         }
 
         @Override
-        protected String doInBackground(String... params)
-        {
+        protected String doInBackground(String... params) {
             String jsonData = params[0];
             HttpURLConnection httpURLConnection = null;
             OutputStream dos = null;
             InputStream ist = null;
 
-            try
-            {
+            try {
                 URL url = new URL(GlobalVar.GV().NaqelPointerAPILink + "CheckPendingCOD");
                 httpURLConnection = (HttpURLConnection) url.openConnection();
 
@@ -110,38 +102,27 @@ public class PendingMoneyActivity
                 dos.write(jsonData.getBytes());
 
                 ist = httpURLConnection.getInputStream();
-                String line ;
+                String line;
                 BufferedReader reader = new BufferedReader(new InputStreamReader(ist));
                 buffer = new StringBuffer();
 
-                while ((line = reader.readLine()) != null)
-                {
+                while ((line = reader.readLine()) != null) {
                     buffer.append(line);
                 }
                 return String.valueOf(buffer);
-            }
-            catch (Exception e)
-            {
+            } catch (Exception e) {
                 e.printStackTrace();
-            }
-            finally
-            {
-                try
-                {
+            } finally {
+                try {
                     if (ist != null)
                         ist.close();
-                }
-                catch (IOException e)
-                {
+                } catch (IOException e) {
                     e.printStackTrace();
                 }
-                try
-                {
+                try {
                     if (dos != null)
                         dos.close();
-                }
-                catch (IOException e)
-                {
+                } catch (IOException e) {
                     e.printStackTrace();
                 }
                 if (httpURLConnection != null)
@@ -152,19 +133,52 @@ public class PendingMoneyActivity
         }
 
         @Override
-        protected void onPostExecute(String finalJson)
-        {
+        protected void onPostExecute(String finalJson) {
             progressDialog.dismiss();
             super.onPostExecute(String.valueOf(finalJson));
-            if (finalJson != null)
-            {
+            if (finalJson != null) {
+                checkPendingCODList.clear();
                 new CheckPendingCODResult(finalJson);
+                adapter.notifyDataSetChanged();
 
-                adapter = new PendingListAdapter(getApplicationContext(), GlobalVar.GV().checkPendingCODList);
-                listview.setAdapter(adapter);
-            }
-            else
-                GlobalVar.GV().ShowSnackbar(mainRootView,getString(R.string.NoPendingCOD), GlobalVar.AlertType.Info);
+
+            } else
+                GlobalVar.GV().ShowSnackbar(getWindow().getDecorView().getRootView(), getString(R.string.NoPendingCOD), GlobalVar.AlertType.Info);
         }
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        outState.putString("txtEmploy", txtEmploy.getText().toString());
+        outState.putParcelableArrayList("checkPendingCODList", checkPendingCODList);
+        outState.putInt("EmployID", GlobalVar.GV().EmployID);
+        outState.putInt("UserID", GlobalVar.GV().UserID);
+        outState.putInt("StationID", GlobalVar.GV().StationID);
+        outState.putString("EmployMobileNo", GlobalVar.GV().EmployMobileNo);
+        outState.putString("EmployName", GlobalVar.GV().EmployName);
+        outState.putString("EmployStation", GlobalVar.GV().EmployStation);
+        outState.putParcelable("currentSettings", GlobalVar.GV().currentSettings);
+        outState.putInt("currentSettingsID", GlobalVar.GV().currentSettings.ID);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        if (savedInstanceState != null) {
+            checkPendingCODList = savedInstanceState.getParcelableArrayList("checkPendingCODList");
+            txtEmploy.setText(savedInstanceState.getString("txtEmploy"));
+            GlobalVar.GV().EmployID = savedInstanceState.getInt("EmployID");
+            GlobalVar.GV().UserID = savedInstanceState.getInt("UserID");
+            GlobalVar.GV().StationID = savedInstanceState.getInt("StationID");
+            GlobalVar.GV().EmployMobileNo = savedInstanceState.getString("EmployMobileNo");
+            GlobalVar.GV().EmployName = savedInstanceState.getString("EmployName");
+            GlobalVar.GV().EmployStation = savedInstanceState.getString("EmployStation");
+            GlobalVar.GV().currentSettings = savedInstanceState.getParcelable("currentSettings");
+            GlobalVar.GV().currentSettings.ID = savedInstanceState.getInt("currentSettingsID");
+            setAdapter();
+        }
+
     }
 }

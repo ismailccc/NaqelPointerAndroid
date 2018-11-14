@@ -24,6 +24,7 @@ public class PickUpRequest
     public String RefNo;
     public String Latitude;
     public String Longitude;
+    public int LoadTypeID;
 //    public double ReceivedAmount;
     public String CurrentVersion = GlobalVar.GV().AppVersion;
     public List<PickUpDetailRequest> PickUpDetailRequestList;

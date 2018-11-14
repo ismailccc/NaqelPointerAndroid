@@ -27,39 +27,39 @@ public class StationResult
 
     }
 
-    public StationResult(String finalJson)
-    {
-        try
-        {
-            JSONArray jsonArray = new JSONArray(finalJson);
-            for(int i = 0; i < jsonArray.length(); i++)
-            {
-                JSONObject jsonObject = jsonArray.getJSONObject(i);
-                StationResult instance = new StationResult();
-                try
-                {
-                    instance.ID = Integer.parseInt(jsonObject.getString("ID"));
-                    instance.Code = jsonObject.getString("Code");
-                    instance.Name = jsonObject.getString("Name");
-                    instance.FName = jsonObject.getString("FName");
-                    instance.CountryID = Integer.parseInt(jsonObject.getString("CountryID"));
-                    HasError = Boolean.parseBoolean(jsonObject.getString("HasError"));
-                    ErrorMessage = jsonObject.getString("ErrorMessage");
+//    public StationResult(String finalJson)
+//    {
+//        try
+//        {
+//            JSONArray jsonArray = new JSONArray(finalJson);
+//            for(int i = 0; i < jsonArray.length(); i++)
+//            {
+//                JSONObject jsonObject = jsonArray.getJSONObject(i);
+//                StationResult instance = new StationResult();
+//                try
+//                {
+//                    instance.ID = Integer.parseInt(jsonObject.getString("ID"));
+//                    instance.Code = jsonObject.getString("Code");
+//                    instance.Name = jsonObject.getString("Name");
+//                    instance.FName = jsonObject.getString("FName");
+//                    instance.CountryID = Integer.parseInt(jsonObject.getString("CountryID"));
+//                    HasError = Boolean.parseBoolean(jsonObject.getString("HasError"));
+//                    ErrorMessage = jsonObject.getString("ErrorMessage");
+//
+//                    CheckStation(instance);
+//                }
+//                catch (JSONException ignored){}
+//            }
+//            //GlobalVar.GV().GetStationList(false);
+//        }
+//        catch (JSONException ignored){}
+//    }
 
-                    CheckStation(instance);
-                }
-                catch (JSONException ignored){}
-            }
-            //GlobalVar.GV().GetStationList(false);
-        }
-        catch (JSONException ignored){}
-    }
-
-    private void CheckStation(StationResult stationResult)
-    {
-        Station station = new Station(stationResult.ID,stationResult.Code,stationResult.Name,stationResult.FName,stationResult.CountryID);
-        DBConnections dbConnections = new DBConnections(GlobalVar.GV().context,GlobalVar.GV().rootView);
-        dbConnections.deleteStation(station);
-        dbConnections.InsertStation(station);
-    }
+//    private void CheckStation(StationResult stationResult)
+//    {
+//        Station station = new Station(stationResult.ID,stationResult.Code,stationResult.Name,stationResult.FName,stationResult.CountryID);
+//        DBConnections dbConnections = new DBConnections(GlobalVar.GV().context,GlobalVar.GV().rootView);
+//        dbConnections.deleteStation(station);
+//        dbConnections.InsertStation(station);
+//    }
 }

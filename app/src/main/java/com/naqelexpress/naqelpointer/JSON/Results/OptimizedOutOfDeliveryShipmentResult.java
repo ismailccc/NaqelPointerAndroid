@@ -1,5 +1,7 @@
 package com.naqelexpress.naqelpointer.JSON.Results;
 
+import android.view.View;
+
 import com.naqelexpress.naqelpointer.GlobalVar;
 
 import org.json.JSONArray;
@@ -20,7 +22,7 @@ public class OptimizedOutOfDeliveryShipmentResult
 
     }
 
-    public OptimizedOutOfDeliveryShipmentResult(String finalJson)
+    public OptimizedOutOfDeliveryShipmentResult(String finalJson,View view)
     {
         try
         {
@@ -36,7 +38,7 @@ public class OptimizedOutOfDeliveryShipmentResult
                 catch (JSONException ignored){}
                 GlobalVar.GV().optimizedOutOfDeliveryShipmentList.add(instance.WaybillNo);
             }
-            GlobalVar.GV().ShowSnackbar(GlobalVar.GV().rootView,"Total Shipments = " + GlobalVar.GV().optimizedOutOfDeliveryShipmentList.size() , GlobalVar.AlertType.Info);
+            GlobalVar.GV().ShowSnackbar(view,"Total Shipments = " + GlobalVar.GV().optimizedOutOfDeliveryShipmentList.size() , GlobalVar.AlertType.Info);
         }
         catch (JSONException ignored){}
     }
