@@ -1103,8 +1103,8 @@ public class GlobalVar {
                             sp.setLatitude(Double.parseDouble(myRouteShipments.Latitude));
                             sp.setLongitude(Double.parseDouble(myRouteShipments.Longitude));
                         } catch (Exception e) {
-                            sp.setLatitude(2);
-                            sp.setLongitude(2);
+                            sp.setLatitude(0);
+                            sp.setLongitude(0);
                         }
 
                         //Places places = new Places(position, latlong);
