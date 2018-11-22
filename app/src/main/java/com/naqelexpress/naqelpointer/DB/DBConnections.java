@@ -21,6 +21,7 @@ import com.naqelexpress.naqelpointer.DB.DBObjects.MultiDelivery;
 import com.naqelexpress.naqelpointer.DB.DBObjects.MultiDeliveryDetail;
 import com.naqelexpress.naqelpointer.DB.DBObjects.MultiDeliveryWaybillDetail;
 import com.naqelexpress.naqelpointer.DB.DBObjects.MyRouteShipments;
+import com.naqelexpress.naqelpointer.DB.DBObjects.MyRouteShipmentsNew;
 import com.naqelexpress.naqelpointer.DB.DBObjects.NoNeedVolumeReason;
 import com.naqelexpress.naqelpointer.DB.DBObjects.NotDelivered;
 import com.naqelexpress.naqelpointer.DB.DBObjects.NotDeliveredDetail;
@@ -42,10 +43,13 @@ import com.naqelexpress.naqelpointer.GlobalVar;
 import org.joda.time.DateTime;
 
 import java.io.File;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 
 public class DBConnections
         extends SQLiteOpenHelper {
-    private static final int Version = 14;
+    private static final int Version = 18;
     private static final String DBName = "NaqelPointerDB.db";
     public Context context;
     public View rootView;
@@ -56,6 +60,7 @@ public class DBConnections
     public static final String COLUMNNAME_FILE = "filename";
     public static final String COLUMNNAME_EMPID = "empid";
     public static final String COLUMNNAME_FLAG = "flag";
+    private String ddate;
 
     public DBConnections(Context context, View view) {
         super(context, DBName, null, Version);
@@ -68,7 +73,12 @@ public class DBConnections
         db.execSQL("CREATE TABLE IF NOT EXISTS \"UserME\" (\"ID\" INTEGER PRIMARY KEY  NOT NULL  UNIQUE , \"EmployID\" INTEGER NOT NULL , \"Password\" TEXT NOT NULL, \"StationID\" INTEGER NOT NULL , \"RoleMEID\" INTEGER, \"StatusID\" INTEGER NOT NULL, \"MachineID\" TEXT,  \"EmployName\" TEXT, \"EmployFName\" TEXT, \"MobileNo\" TEXT, \"StationCode\" TEXT, \"StationName\" TEXT, \"StationFName\" TEXT)");
         db.execSQL("CREATE TABLE IF NOT EXISTS \"UserLogs\" (\"ID\" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL UNIQUE , \"UserID\" INTEGER NOT NULL , \"SuperVisorID\" INTEGER NOT NULL, \"IsSync\" BOOL NOT NULL , \"LogTypeID\" INTEGER NOT NULL , \"CTime\" DATETIME NOT NULL , \"MachineID\" TEXT , \"Remarks\" TEXT)");
         db.execSQL("CREATE TABLE IF NOT EXISTS \"UserMeLogin\" (\"ID\" INTEGER PRIMARY KEY AUTOINCREMENT  NOT NULL  UNIQUE , \"EmployID\" INTEGER NOT NULL , \"StateID\" INTEGER NOT NULL , \"Date\" DATETIME NOT NULL  DEFAULT CURRENT_TIMESTAMP, \"HHDName\" TEXT check(typeof(\"HHDName\") = 'text') , \"Version\" TEXT NOT NULL  check(typeof(\"Version\") = 'text') , \"IsSync\" BOOL NOT NULL , \"TruckID\" INTEGER , \"LogoutDate\" DATETIME , \"LogedOut\" BOOL )");
-        db.execSQL("CREATE TABLE IF NOT EXISTS \"OnDelivery\" (\"ID\" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL , \"WaybillNo\" INTEGER NOT NULL , \"ReceiverName\" TEXT (100) NOT NULL , \"PiecesCount\" INTEGER NOT NULL , \"TimeIn\" DATETIME NOT NULL , \"TimeOut\" INTEGER NOT NULL , \"EmployID\" INTEGER NOT NULL , \"StationID\" INTEGER NOT NULL , \"IsPartial\" BOOL NOT NULL  DEFAULT 0, \"Latitude\" TEXT, \"Longitude\" TEXT , \"TotalReceivedAmount\" DOUBLE NOT NULL , \"CashAmount\" DOUBLE NOT NULL DEFAULT 0, \"POSAmount\" DOUBLE NOT NULL DEFAULT 0 , \"IsSync\" BOOL NOT NULL)");
+        db.execSQL("CREATE TABLE IF NOT EXISTS \"OnDelivery\" (\"ID\" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL , " +
+                "\"WaybillNo\" INTEGER NOT NULL , \"ReceiverName\" TEXT (100) NOT NULL , \"PiecesCount\" INTEGER NOT NULL ," +
+                " \"TimeIn\" DATETIME NOT NULL , \"TimeOut\" INTEGER NOT NULL , \"EmployID\" INTEGER NOT NULL , " +
+                "\"StationID\" INTEGER NOT NULL , \"IsPartial\" BOOL NOT NULL  DEFAULT 0, \"Latitude\" TEXT, \"Longitude\" TEXT ," +
+                " \"TotalReceivedAmount\" DOUBLE NOT NULL , \"CashAmount\" DOUBLE NOT NULL DEFAULT 0, \"POSAmount\" DOUBLE NOT NULL DEFAULT 0 ," +
+                " \"IsSync\" BOOL NOT NULL,\"AL\" INTEGER DEFAULT 0)");
         db.execSQL("CREATE TABLE IF NOT EXISTS \"OnDeliveryDetail\" (\"ID\" INTEGER PRIMARY KEY AUTOINCREMENT  NOT NULL  UNIQUE , \"BarCode\" TEXT NOT NULL , \"IsSync\" BOOL NOT NULL , \"DeliveryID\" INTEGER NOT NULL )");
         db.execSQL("CREATE TABLE IF NOT EXISTS \"Station\" (\"ID\" INTEGER PRIMARY KEY  NOT NULL  UNIQUE , \"Code\" TEXT, \"Name\" TEXT NOT NULL , \"FName\" TEXT, \"CountryID\" INTEGER NOT NULL )");
         db.execSQL("CREATE TABLE IF NOT EXISTS \"DeliveryStatus\" (\"ID\" INTEGER PRIMARY KEY  NOT NULL  UNIQUE , \"Code\" TEXT, \"Name\" TEXT NOT NULL , \"FName\" TEXT)");
@@ -78,14 +88,28 @@ public class DBConnections
                 " \"ClientID\" INTEGER, \"FromStationID\" INTEGER NOT NULL , \"ToStationID\" INTEGER NOT NULL , " +
                 "\"PieceCount\" INTEGER NOT NULL , \"Weight\" DOUBLE, \"TimeIn\" DATETIME NOT NULL , \"TimeOut\" DATETIME NOT NULL , " +
                 "\"IsSync\" BOOL NOT NULL , \"UserID\" INTEGER NOT NULL , \"StationID\" INTEGER NOT NULL , \"RefNo\" TEXT, \"Latitude\"" +
-                " TEXT, \"CurrentVersion\" TEXT NOT NULL, \"Longitude\" TEXT ,\"LoadTypeID\" INTEGER NOT NULL)");
+                " TEXT, \"CurrentVersion\" TEXT NOT NULL, \"Longitude\" TEXT ,\"LoadTypeID\" INTEGER NOT NULL,\"AL\" INTEGER DEFAULT 0)");
         db.execSQL("CREATE TABLE IF NOT EXISTS \"PickUpDetail\" (\"ID\" INTEGER PRIMARY KEY AUTOINCREMENT  NOT NULL  UNIQUE , \"BarCode\" TEXT NOT NULL , \"IsSync\" BOOL NOT NULL , \"PickUpID\" INTEGER NOT NULL )");
         db.execSQL("CREATE TABLE IF NOT EXISTS \"UserSettings\" (\"ID\" INTEGER PRIMARY KEY AUTOINCREMENT  NOT NULL  UNIQUE  , \"EmployID\" INTEGER NOT NULL , \"ShowScaningCamera\" BOOL NOT NULL , \"IPAddress\" TEXT NOT NULL , \"LastBringMasterData\" DATETIME)");
         db.execSQL("CREATE TABLE IF NOT EXISTS \"CourierDailyRoute\" (\"ID\" INTEGER PRIMARY KEY AUTOINCREMENT  NOT NULL , \"EmployID\" INTEGER NOT NULL , \"StartingTime\" DATETIME NOT NULL , \"StartLatitude\" TEXT, \"StartLongitude\" TEXT, \"EndTime\" DATETIME NULL , \"EndLatitude\" TEXT, \"EndLongitude\" TEXT, \"DeliverySheetID\" INTEGER)");
         db.execSQL("CREATE TABLE IF NOT EXISTS \"OnCloadingForD\" (\"ID\" INTEGER PRIMARY KEY AUTOINCREMENT  NOT NULL , \"CourierID\" INTEGER NOT NULL , \"UserID\" INTEGER NOT NULL , \"IsSync\" BOOL NOT NULL , \"CTime\" DATETIME NOT NULL , \"PieceCount\" INTEGER NOT NULL , \"TruckID\" TEXT, \"WaybillCount\" INTEGER NOT NULL , \"StationID\" INTEGER NOT NULL )");
         db.execSQL("CREATE TABLE IF NOT EXISTS \"OnCLoadingForDDetail\" (\"ID\" INTEGER PRIMARY KEY AUTOINCREMENT  NOT NULL , \"BarCode\" TEXT NOT NULL , \"IsSync\" BOOL NOT NULL , \"OnCLoadingForDID\" INTEGER NOT NULL )");
         db.execSQL("CREATE TABLE IF NOT EXISTS \"OnCLoadingForDWaybill\" (\"ID\" INTEGER PRIMARY KEY AUTOINCREMENT  NOT NULL , \"WaybillNo\" TEXT NOT NULL , \"IsSync\" BOOL NOT NULL , \"OnCLoadingID\" INTEGER NOT NULL )");
-        db.execSQL("CREATE TABLE IF NOT EXISTS \"MyRouteShipments\" (\"ID\" INTEGER PRIMARY KEY AUTOINCREMENT  NOT NULL , \"OrderNo\" INTEGER NOT NULL , \"ItemNo\" TEXT NOT NULL , \"TypeID\" INTEGER NOT NULL , \"BillingType\" TEXT, \"CODAmount\" DOUBLE NOT NULL , \"DeliverySheetID\" INTEGER, \"Date\" DATETIME NOT NULL , \"ExpectedTime\" DATETIME, \"Latitude\" TEXT NOT NULL , \"Longitude\" TEXT NOT NULL , \"ClientID\" INTEGER NOT NULL , \"ClientName\" TEXT NOT NULL , \"ClientFName\" TEXT NOT NULL , \"ClientAddressPhoneNumber\" TEXT NOT NULL , \"ClientAddressFirstAddress\" TEXT NOT NULL , \"ClientAddressSecondAddress\" TEXT NOT NULL , \"ClientContactName\" TEXT NOT NULL , \"ClientContactFName\" TEXT NOT NULL , \"ClientContactPhoneNumber\" TEXT , \"ClientContactMobileNo\" TEXT NOT NULL , \"ConsigneeName\" TEXT NOT NULL , \"ConsigneeFName\" TEXT NOT NULL , \"ConsigneePhoneNumber\" TEXT NOT NULL , \"ConsigneeFirstAddress\" TEXT NOT NULL , \"ConsigneeSecondAddress\" TEXT NOT NULL , \"ConsigneeNear\" TEXT NOT NULL , \"ConsigneeMobile\" TEXT NOT NULL , \"Origin\"  TEXT NOT NULL , \"Destination\" TEXT NOT NULL , \"PODNeeded\" BOOL NOT NULL , \"PODDetail\" TEXT NOT NULL , \"PODTypeCode\" TEXT NOT NULL , \"PODTypeName\" TEXT NOT NULL , \"IsDelivered\" BOOL , \"NotDelivered\" BOOL , \"CourierDailyRouteID\" INTEGER , \"OptimzeSerialNo\" INTEGER , \"HasComplaint\" BOOL, \"HasDeliveryRequest\" BOOL )");
+        db.execSQL("CREATE TABLE IF NOT EXISTS \"MyRouteShipments\" (\"ID\" INTEGER PRIMARY KEY AUTOINCREMENT  NOT NULL , " +
+                "\"OrderNo\" INTEGER NOT NULL , \"ItemNo\" TEXT NOT NULL , \"TypeID\" INTEGER NOT NULL , \"BillingType\" TEXT, " +
+                "\"CODAmount\" DOUBLE NOT NULL , \"DeliverySheetID\" INTEGER, \"Date\" DATETIME NOT NULL , \"ExpectedTime\" DATETIME," +
+                " \"Latitude\" TEXT NOT NULL , \"Longitude\" TEXT NOT NULL , \"ClientID\" INTEGER NOT NULL , " +
+                "\"ClientName\" TEXT NOT NULL , \"ClientFName\" TEXT NOT NULL , \"ClientAddressPhoneNumber\" TEXT NOT NULL ," +
+                " \"ClientAddressFirstAddress\" TEXT NOT NULL , \"ClientAddressSecondAddress\" TEXT NOT NULL ," +
+                " \"ClientContactName\" TEXT NOT NULL , \"ClientContactFName\" TEXT NOT NULL , \"ClientContactPhoneNumber\" TEXT ," +
+                " \"ClientContactMobileNo\" TEXT NOT NULL , \"ConsigneeName\" TEXT NOT NULL , \"ConsigneeFName\" TEXT NOT NULL ," +
+                " \"ConsigneePhoneNumber\" TEXT NOT NULL , \"ConsigneeFirstAddress\" TEXT NOT NULL , " +
+                "\"ConsigneeSecondAddress\" TEXT NOT NULL , \"ConsigneeNear\" TEXT NOT NULL , \"ConsigneeMobile\" TEXT NOT NULL , " +
+                "\"Origin\"  TEXT NOT NULL , \"Destination\" TEXT NOT NULL , \"PODNeeded\" BOOL NOT NULL , " +
+                "\"PODDetail\" TEXT NOT NULL , \"PODTypeCode\" TEXT NOT NULL , \"PODTypeName\" TEXT NOT NULL , \"IsDelivered\" BOOL , " +
+                "\"NotDelivered\" BOOL , \"CourierDailyRouteID\" INTEGER , \"OptimzeSerialNo\" INTEGER , \"HasComplaint\" BOOL, " +
+                "\"HasDeliveryRequest\" BOOL ,\"DDate\" TEXT NOT NULL,\"EmpID\" INTEGER NOT NULL,\"Weight\" TEXT NOT NULL," +
+                "\"PiecesCount\" TEXT NOT NULL, \"Sign\" INTEGER Default 0)");
         db.execSQL("CREATE TABLE IF NOT EXISTS \"CheckPoint\" (\"ID\" INTEGER PRIMARY KEY AUTOINCREMENT  NOT NULL  UNIQUE , \"EmployID\" INTEGER NOT NULL , \"Date\" DATETIME NOT NULL , \"CheckPointTypeID\" INTEGER NOT NULL , \"CheckPointTypeDetailID\" INTEGER NULL , \"CheckPointTypeDDetailID\" INTEGER NULL , \"Latitude\" TEXT, \"Longitude\" TEXT, \"IsSync\" BOOL NOT NULL )");
         db.execSQL("CREATE TABLE IF NOT EXISTS \"CheckPointWaybillDetails\" (\"ID\" INTEGER PRIMARY KEY AUTOINCREMENT  NOT NULL  UNIQUE , \"WaybillNo\" TEXT NOT NULL , \"CheckPointID\" INTEGER NOT NULL , \"IsSync\" BOOL NOT NULL )");
         db.execSQL("CREATE TABLE IF NOT EXISTS \"CheckPointBarCodeDetails\" (\"ID\" INTEGER PRIMARY KEY AUTOINCREMENT  NOT NULL  UNIQUE , \"BarCode\" TEXT NOT NULL , \"CheckPointID\" INTEGER NOT NULL , \"IsSync\" BOOL NOT NULL )");
@@ -94,7 +118,11 @@ public class DBConnections
         db.execSQL("CREATE TABLE IF NOT EXISTS \"CheckPointTypeDetail\" (\"ID\" INTEGER PRIMARY KEY  NOT NULL  UNIQUE , \"Name\" TEXT NOT NULL , \"FName\" TEXT , \"CheckPointTypeID\" INTEGER NOT NULL  )");
         db.execSQL("CREATE TABLE IF NOT EXISTS \"CheckPointTypeDDetail\" (\"ID\" INTEGER PRIMARY KEY  NOT NULL  UNIQUE , \"Name\" TEXT NOT NULL , \"FName\" TEXT , \"CheckPointTypeDetailID\" INTEGER NOT NULL)");
 
-        db.execSQL("CREATE TABLE IF NOT EXISTS \"MultiDelivery\"  ( \"ID\" INTEGER PRIMARY KEY AUTOINCREMENT  NOT NULL  UNIQUE, \"ReceiverName\" TEXT NOT NULL, \"PiecesCount\" INTEGER NOT NULL, \"TimeIn\" DATETIME NOT NULL , \"TimeOut\" DATETIME NOT NULL , \"UserID\" INTEGER NOT NULL, \"IsSync\" BOOL NOT NULL, \"StationID\" INTEGER NOT NULL, \"WaybillsCount\" INTEGER NOT NULL, \"Latitude\" TEXT, \"Longitude\" TEXT, \"ReceivedAmt\" DOUBLE, \"ReceiptNo\" TEXT, \"StopPointsID\" INTEGER )");
+        db.execSQL("CREATE TABLE IF NOT EXISTS \"MultiDelivery\"  ( \"ID\" INTEGER PRIMARY KEY AUTOINCREMENT  NOT NULL  UNIQUE, " +
+                "\"ReceiverName\" TEXT NOT NULL, \"PiecesCount\" INTEGER NOT NULL, \"TimeIn\" DATETIME NOT NULL , " +
+                "\"TimeOut\" DATETIME NOT NULL , \"UserID\" INTEGER NOT NULL, \"IsSync\" BOOL NOT NULL, " +
+                "\"StationID\" INTEGER NOT NULL, \"WaybillsCount\" INTEGER NOT NULL, \"Latitude\" TEXT, \"Longitude\" TEXT," +
+                " \"ReceivedAmt\" DOUBLE, \"ReceiptNo\" TEXT, \"StopPointsID\" INTEGER,\"AL\" INTEGER DEFAULT 0 )");
         db.execSQL("CREATE TABLE IF NOT EXISTS \"MultiDeliveryDetail\" ( \"ID\" INTEGER PRIMARY KEY AUTOINCREMENT  NOT NULL  UNIQUE, \"BarCode\" TEXT NOT NULL, \"IsSync\" BOOL NOT NULL, \"MultiDeliveryID\" INTEGER NOT NULL )");
         db.execSQL("CREATE TABLE IF NOT EXISTS \"MultiDeliveryWaybillDetail\" ( \"ID\" INTEGER PRIMARY KEY AUTOINCREMENT  NOT NULL  UNIQUE, \"WaybillNo\" TEXT NOT NULL, \"IsSync\" BOOL NOT NULL, \"MultiDeliveryID\" INTEGER NOT NULL )");
         db.execSQL("CREATE TABLE IF NOT EXISTS \"WaybillMeasurement\"  ( \"ID\" INTEGER PRIMARY KEY AUTOINCREMENT  NOT NULL  UNIQUE, \"WaybillNo\" INTEGER NOT NULL, \"TotalPieces\" INTEGER NOT NULL, \"EmployID\" INTEGER NOT NULL , \"StationID\" INTEGER NOT NULL , \"CTime\" DATETIME NOT NULL, \"IsSync\" BOOL NOT NULL, \"HHD\" TEXT, \"Weight\" DOUBLE NOT NULL, \"NoNeedVolume\" BOOL NOT NULL , \"NoNeedVolumeReasonID\" INTEGER )");
@@ -145,12 +173,17 @@ public class DBConnections
 
         db.execSQL("CREATE TABLE IF NOT EXISTS \"AtDestination\" (\"ID\" INTEGER PRIMARY KEY  AUTOINCREMENT NOT NULL  UNIQUE ," +
                 "\"Json\"  TEXT NOT NULL )");
+
+        db.execSQL("CREATE TABLE IF NOT EXISTS \"BarCode\" (\"ID\" INTEGER PRIMARY KEY  AUTOINCREMENT NOT NULL  UNIQUE ," +
+                "\"BarCode\"  TEXT NOT NULL, \"WayBillNo\"  TEXT NOT NULL,\"Date\" TEXT NOT NULL )");
     }
 
     public int getVersion() {
         SQLiteDatabase db = this.getReadableDatabase();
         return db.getVersion();
     }
+
+    private SQLiteDatabase mDefaultWritableDatabase = null;
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
@@ -167,8 +200,10 @@ public class DBConnections
 //            db.execSQL("CREATE TABLE IF NOT EXISTS \"WaybillMeasurementDetail\" ( \"ID\" INTEGER PRIMARY KEY AUTOINCREMENT  NOT NULL  UNIQUE, \"PiecesCount\" INTEGER NOT NULL, \"Width\" DOUBLE NOT NULL, \"Length\" DOUBLE NOT NULL, \"Height\" DOUBLE NOT NULL, \"IsSync\" BOOL NOT NULL, \"WaybillMeasurementID\" INTEGER NOT NULL )");
 //            db.execSQL("CREATE TABLE IF NOT EXISTS \"NoNeedVolumeReason\" (\"ID\" INTEGER PRIMARY KEY  NOT NULL  UNIQUE , \"Name\" TEXT NOT NULL , \"FName\" TEXT )");
 //        }
+
         if (oldVersion < newVersion) {
             //Added by ismail
+            this.mDefaultWritableDatabase = db;
             db.execSQL("create table if not exists " + TABLENAME + "(" + COLUMNID
                     + " integer primary key," + COLUMNNAME_FILE + " text,"
                     + COLUMNNAME_EMPID + " text," + COLUMNNAME_FLAG
@@ -212,8 +247,28 @@ public class DBConnections
             db.execSQL("CREATE TABLE IF NOT EXISTS \"AtDestination\" (\"ID\" INTEGER PRIMARY KEY  AUTOINCREMENT NOT NULL  UNIQUE ," +
                     "\"Json\"  TEXT NOT NULL )");
 
+            db.execSQL("CREATE TABLE IF NOT EXISTS \"BarCode\" (\"ID\" INTEGER PRIMARY KEY  AUTOINCREMENT NOT NULL  UNIQUE ," +
+                    "\"BarCode\"  TEXT NOT NULL, \"WayBillNo\"  TEXT NOT NULL,\"Date\" TEXT NOT NULL )");
+
             if (!isColumnExist("PickUp", "LoadTypeID"))
                 db.execSQL("ALTER TABLE PickUp ADD COLUMN LoadTypeID INTEGER DEFAULT 0");
+            if (!isColumnExist("PickUp", "AL"))
+                db.execSQL("ALTER TABLE PickUp ADD COLUMN AL INTEGER DEFAULT 0");
+            if (!isColumnExist("OnDelivery", "AL"))
+                db.execSQL("ALTER TABLE OnDelivery ADD COLUMN AL INTEGER DEFAULT 0");
+            if (!isColumnExist("MultiDelivery", "AL"))
+                db.execSQL("ALTER TABLE MultiDelivery ADD COLUMN AL INTEGER DEFAULT 0");
+            if (!isColumnExist("MyRouteShipments", "DDate"))
+                db.execSQL("ALTER TABLE MyRouteShipments ADD COLUMN DDate TEXT");
+            if (!isColumnExist("MyRouteShipments", "EmpID"))
+                db.execSQL("ALTER TABLE MyRouteShipments ADD COLUMN EmpID INTEGER DEFAULT 0");
+            if (!isColumnExist("MyRouteShipments", "Weight"))
+                db.execSQL("ALTER TABLE MyRouteShipments ADD COLUMN Weight TEXT");
+            if (!isColumnExist("MyRouteShipments", "PiecesCount"))
+                db.execSQL("ALTER TABLE MyRouteShipments ADD COLUMN PiecesCount TEXT");
+            if (!isColumnExist("MyRouteShipments", "Sign"))
+                db.execSQL("ALTER TABLE MyRouteShipments ADD COLUMN Sign INTEGER DEFAULT 0");
+
         }
 
 
@@ -242,18 +297,27 @@ public class DBConnections
     public boolean isColumnExist(String tableName, String fieldName) {
         boolean isExist = false;
         try {
-            SQLiteDatabase db = getReadableDatabase();
+            final SQLiteDatabase db;
+            if (mDefaultWritableDatabase != null) {
+                db = mDefaultWritableDatabase;
+            } else {
+                db = super.getReadableDatabase();
+            }
+
+
             Cursor res = null;
             try {
                 res = db.rawQuery("Select * from " + tableName + " limit 1", null);
                 int colIndex = res.getColumnIndex(fieldName);
                 if (colIndex != -1)
                     isExist = true;
+
             } catch (Exception ignored) {
             } finally {
                 try {
                     if (res != null)
                         res.close();
+
                 } catch (Exception ignored) {
                 }
             }
@@ -497,7 +561,7 @@ public class DBConnections
 //    }
 
     //---------------------------------On Delivery Table-------------------------------
-    public boolean InsertOnDelivery(OnDelivery instance, Context context) {
+    public boolean InsertOnDelivery(OnDelivery instance, Context context, int al) {
 
         long result = 0;
 
@@ -518,6 +582,7 @@ public class DBConnections
             contentValues.put("CashAmount", instance.CashAmount);
             contentValues.put("POSAmount", instance.POSAmount);
             contentValues.put("IsSync", instance.IsSync);
+            contentValues.put("AL", al);
 
             result = db.insert("OnDelivery", null, contentValues);
             db.close();
@@ -562,7 +627,7 @@ public class DBConnections
     }
 
     //---------------------------------PickUp Table-------------------------------
-    public boolean InsertPickUp(PickUp instance, Context context, int lid) {
+    public boolean InsertPickUp(PickUp instance, Context context, int lid, int al) {
         long result = 0;
         try {
             SQLiteDatabase db = SQLiteDatabase.openDatabase(context.getDatabasePath(DBName).getPath(), null, SQLiteDatabase.NO_LOCALIZED_COLLATORS | SQLiteDatabase.OPEN_READWRITE);
@@ -583,6 +648,7 @@ public class DBConnections
             contentValues.put("Longitude", instance.Longitude);
             contentValues.put("CurrentVersion", instance.CurrentVersion);
             contentValues.put("LoadTypeID", lid);
+            contentValues.put("AL", al);
             result = db.insert("PickUp", null, contentValues);
             db.close();
         } catch (SQLiteException e) {
@@ -1195,7 +1261,7 @@ public class DBConnections
     }
 
     //---------------------------------Multi Delivery Table-------------------------------
-    public boolean InsertMultiDelivery(MultiDelivery instance, Context context) {
+    public boolean InsertMultiDelivery(MultiDelivery instance, Context context, int al) {
         long result = 0;
         try {
             SQLiteDatabase db = SQLiteDatabase.openDatabase(context.getDatabasePath(DBName).getPath(), null, SQLiteDatabase.NO_LOCALIZED_COLLATORS | SQLiteDatabase.OPEN_READWRITE);
@@ -1213,6 +1279,8 @@ public class DBConnections
             contentValues.put("ReceivedAmt", instance.ReceivedAmt);
             contentValues.put("ReceiptNo", instance.ReceiptNo);
             contentValues.put("StopPointsID", instance.StopPointsID);
+            contentValues.put("AL", al);
+
             result = db.insert("MultiDelivery", null, contentValues);
             db.close();
         } catch (SQLiteException e) {
@@ -1470,6 +1538,12 @@ public class DBConnections
 
         try {
 
+            Date c = Calendar.getInstance().getTime();
+            System.out.println("Current time => " + c);
+
+            SimpleDateFormat df = new SimpleDateFormat("dd-MM-yyyy");
+            String ddate = df.format(c);
+
             SQLiteDatabase db = SQLiteDatabase.openDatabase(context.getDatabasePath(DBName).getPath(), null, SQLiteDatabase.NO_LOCALIZED_COLLATORS | SQLiteDatabase.OPEN_READWRITE);
             ContentValues contentValues = new ContentValues();
             contentValues.put("OrderNo", instance.OrderNo);
@@ -1509,6 +1583,11 @@ public class DBConnections
             contentValues.put("NotDelivered", instance.NotDelivered);
             contentValues.put("CourierDailyRouteID", instance.CourierDailyRouteID);
             contentValues.put("HasComplaint", instance.HasComplaint);
+            contentValues.put("EmpID", GlobalVar.GV().EmployID);
+            contentValues.put("DDate", GlobalVar.getDate());
+            contentValues.put("PiecesCount", instance.PiecesCount);
+            contentValues.put("Weight", instance.Weight);
+            contentValues.put("Sign", instance.Sign);
 
             if (isColumnExist("MyRouteShipments", "OptimzeSerialNo", context))
                 contentValues.put("OptimzeSerialNo", 0);
@@ -1521,6 +1600,122 @@ public class DBConnections
 
         return result != -1;
     }
+
+    public boolean InsertMyRouteShipments(MyRouteShipmentsNew instance, Context context) {
+        long result = 0;
+
+        try {
+
+            SQLiteDatabase db = SQLiteDatabase.openDatabase(context.getDatabasePath(DBName).getPath(), null, SQLiteDatabase.NO_LOCALIZED_COLLATORS | SQLiteDatabase.OPEN_READWRITE);
+            ContentValues contentValues = new ContentValues();
+            contentValues.put("OrderNo", instance.OrderNo);
+            contentValues.put("ItemNo", instance.ItemNo);
+            contentValues.put("TypeID", instance.TypeID);
+            contentValues.put("BillingType", instance.BillingType);
+            contentValues.put("CODAmount", instance.CODAmount);
+            contentValues.put("DeliverySheetID", instance.DeliverySheetID);
+            contentValues.put("Date", instance.Date.toString());
+            contentValues.put("ExpectedTime", instance.ExpectedTime.toString());
+            contentValues.put("Latitude", instance.Latitude);
+            contentValues.put("Longitude", instance.Longitude);
+            contentValues.put("ClientID", instance.ClientID);
+            contentValues.put("ClientName", instance.ClientName);
+            contentValues.put("ClientFName", instance.ClientFName);
+            contentValues.put("ClientAddressPhoneNumber", instance.ClientAddressPhoneNumber);
+            contentValues.put("ClientAddressFirstAddress", instance.ClientAddressFirstAddress);
+            contentValues.put("ClientAddressSecondAddress", instance.ClientAddressSecondAddress);
+            contentValues.put("ClientContactName", instance.ClientContactName);
+            contentValues.put("ClientContactFName", instance.ClientContactFName);
+            contentValues.put("ClientContactPhoneNumber", instance.ClientContactPhoneNumber);
+            contentValues.put("ClientContactMobileNo", instance.ClientContactMobileNo);
+            contentValues.put("ConsigneeName", instance.ConsigneeName);
+            contentValues.put("ConsigneeFName", instance.ConsigneeFName);
+            contentValues.put("ConsigneePhoneNumber", instance.ConsigneePhoneNumber);
+            contentValues.put("ConsigneeFirstAddress", instance.ConsigneeFirstAddress);
+            contentValues.put("ConsigneeSecondAddress", instance.ConsigneeSecondAddress);
+            contentValues.put("ConsigneeNear", instance.ConsigneeNear);
+            contentValues.put("ConsigneeMobile", instance.ConsigneeMobile);
+            contentValues.put("Origin", instance.Origin);
+            contentValues.put("Destination", instance.Destination);
+            contentValues.put("PODNeeded", instance.PODNeeded);
+            contentValues.put("PODDetail", instance.PODDetail);
+            contentValues.put("PODTypeCode", instance.PODTypeCode);
+            contentValues.put("PODTypeName", instance.PODTypeName);
+            contentValues.put("IsDelivered", instance.IsDelivered);
+            contentValues.put("NotDelivered", instance.NotDelivered);
+            contentValues.put("CourierDailyRouteID", instance.CourierDailyRouteID);
+            contentValues.put("HasComplaint", instance.HasComplaint);
+            contentValues.put("EmpID", GlobalVar.GV().EmployID);
+            contentValues.put("DDate", GlobalVar.getDate());
+            contentValues.put("PiecesCount", instance.PiecesCount);
+            contentValues.put("Weight", instance.Weight);
+            contentValues.put("Sign", instance.Sign);
+
+
+            if (isColumnExist("MyRouteShipments", "OptimzeSerialNo", context))
+                contentValues.put("OptimzeSerialNo", 0);
+
+            result = db.insert("MyRouteShipments", null, contentValues);
+            db.close();
+        } catch (SQLiteException e) {
+            e.printStackTrace();
+        }
+
+        return result != -1;
+    }
+
+    public boolean InsertBarCode(String waybill, String barcode, Context context) {
+        long result = 0;
+
+        try {
+
+            SQLiteDatabase db = SQLiteDatabase.openDatabase(context.getDatabasePath(DBName).getPath(), null, SQLiteDatabase.NO_LOCALIZED_COLLATORS | SQLiteDatabase.OPEN_READWRITE);
+            ContentValues contentValues = new ContentValues();
+            contentValues.put("BarCode", barcode);
+            contentValues.put("WayBillNo", waybill);
+            contentValues.put("Date", GlobalVar.getDate());
+            result = db.insert("BarCode", null, contentValues);
+            db.close();
+        } catch (SQLiteException e) {
+            e.printStackTrace();
+        }
+
+        return result != -1;
+    }
+
+
+    public void deleteDeliverysheetExceptByToday(View view) {
+        try {
+            SQLiteDatabase db = SQLiteDatabase.openDatabase(context.getDatabasePath(DBName).getPath(), null, SQLiteDatabase.NO_LOCALIZED_COLLATORS | SQLiteDatabase.OPEN_READWRITE);
+            ;
+            try {
+                String args[] = {GlobalVar.getDate()};
+                db.delete("MyRouteShipments", "DDate!=?", args);
+            } catch (Exception e) {
+                GlobalVar.GV().ShowSnackbar(view, e.getMessage(), GlobalVar.AlertType.Error);
+            }
+            db.close();
+        } catch (SQLiteException e) {
+
+        }
+    }
+
+    public void deleteBarCodeExceptByToday(View view) {
+        try {
+            SQLiteDatabase db = SQLiteDatabase.openDatabase(context.getDatabasePath(DBName).getPath(), null, SQLiteDatabase.NO_LOCALIZED_COLLATORS | SQLiteDatabase.OPEN_READWRITE);
+            ;
+            try {
+                String args[] = {GlobalVar.getDate()};
+                db.delete("BarCode", "Date!=?", args);
+            } catch (Exception e) {
+                GlobalVar.GV().ShowSnackbar(view, e.getMessage(), GlobalVar.AlertType.Error);
+            }
+            db.close();
+        } catch (SQLiteException e) {
+
+        }
+    }
+
 
     public boolean UpdateMyRouteShipmentsWithOptimizationSerial(int ID, int SerialNo, DateTime dateTime, Context context) {
         try {
@@ -1845,6 +2040,19 @@ public class DBConnections
 
         }
     }
+
+    public void deleteMyRouteShipments() {
+        try {
+            SQLiteDatabase db = SQLiteDatabase.openDatabase(context.getDatabasePath(DBName).getPath(), null, SQLiteDatabase.NO_LOCALIZED_COLLATORS | SQLiteDatabase.OPEN_READWRITE);
+
+            db.execSQL("delete from MyRouteShipments");
+            db.execSQL("delete from BarCode");
+            db.close();
+        } catch (SQLiteException e) {
+
+        }
+    }
+
 
     public boolean InsertTripDDetails(String instance, Context context) {
         long result = 0;

@@ -9,8 +9,9 @@
     <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/asd"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
         android:background="@color/White"
@@ -39,5 +40,15 @@
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             tools:ignore="HardcodedText,LabelFor,ObsoleteLayoutParam,RtlHardcoded" />
+
+
     </android.support.constraint.ConstraintLayout>
+
+    <CheckBox
+        android:id="@+id/alocation"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/asd"
+        android:layout_gravity="end"
+        android:text="Actual Location" />
 </RelativeLayout>

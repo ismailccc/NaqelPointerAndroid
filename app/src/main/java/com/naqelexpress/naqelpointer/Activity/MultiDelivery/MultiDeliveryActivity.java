@@ -103,7 +103,10 @@ public class MultiDeliveryActivity extends AppCompatActivity {
         // Handle item selection
         switch (item.getItemId()) {
             case R.id.mnuSave:
-                SaveData();
+                if (GlobalVar.ValidateAutomacticDate(getApplicationContext()))
+                    SaveData();
+                else
+                    GlobalVar.RedirectSettings(MultiDeliveryActivity.this);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -120,7 +123,7 @@ public class MultiDeliveryActivity extends AppCompatActivity {
                     DateTime.now(), secondFragment.WaybillList.size(),
                     String.valueOf(Latitude), String.valueOf(Longitude), 0, "0", 0);
 
-            if (dbConnections.InsertMultiDelivery(multiDelivery, getApplicationContext())) {
+            if (dbConnections.InsertMultiDelivery(multiDelivery, getApplicationContext(),firstFragment.al)) {
                 int multiDeliveryID = dbConnections.getMaxID("MultiDelivery", getApplicationContext());
                 for (int i = 0; i < secondFragment.WaybillList.size(); i++) {
                     MultiDeliveryWaybillDetail multiDeliveryWaybillDetail =

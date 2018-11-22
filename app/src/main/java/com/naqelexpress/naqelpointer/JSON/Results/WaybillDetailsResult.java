@@ -53,7 +53,8 @@ public class WaybillDetailsResult
             Near = jsonObject.getString("Near");
             CityName = jsonObject.getString("CityName");
             CityFName = jsonObject.getString("CityFName");
-            if (jsonObject.getInt("ClientID") == 9018270)
+            //if (jsonObject.getInt("ClientID") == 9018270)
+            if (jsonObject.getInt("Sign") == 1)
                 signrequired = true;
 
             locationCoordinate = new LocationCoordinate();

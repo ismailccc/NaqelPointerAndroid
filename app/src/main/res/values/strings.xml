@@ -58,7 +58,7 @@
     <string name="WaybillNo">Waybill No</string>
     <string name="txtConsigneeName">Consignee Name : </string>
     <string name="txtAddress">Address : </string>
-    <string name="txtSecondAddress">Second Address Line</string>
+    <string name="txtSecondAddress">Second Address Line : </string>
     <string name="txtNear">Near : </string>
     <string name="txtMobileNo">Mobile No : </string>
     <string name="txtPhoneNo">Phone No : </string>

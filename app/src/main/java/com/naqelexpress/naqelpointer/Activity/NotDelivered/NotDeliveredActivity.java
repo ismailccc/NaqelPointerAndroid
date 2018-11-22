@@ -201,7 +201,10 @@ public class NotDeliveredActivity
         // Handle item selection
         switch (item.getItemId()) {
             case R.id.mnuSave:
-                SaveData();
+                if (GlobalVar.ValidateAutomacticDate(getApplicationContext()))
+                    SaveData();
+                else
+                    GlobalVar.RedirectSettings(NotDeliveredActivity.this);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);

@@ -160,6 +160,7 @@ public class OnDelivery extends Service {
                     //onDeliveryRequest.StopPointsID = Integer.parseInt(result.getString(result.getColumnIndex("StopPointsID")));
                     onDeliveryRequest.POSAmount = Double.parseDouble(result.getString(result.getColumnIndex("POSAmount")));
                     onDeliveryRequest.CashAmount = Double.parseDouble(result.getString(result.getColumnIndex("CashAmount")));
+                    onDeliveryRequest.al = result.getInt(result.getColumnIndex("AL"));
 
                     Cursor resultDetail = db.Fill("select * from OnDeliveryDetail where DeliveryID = " + onDeliveryRequest.ID, getApplicationContext());
 

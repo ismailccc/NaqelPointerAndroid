@@ -155,7 +155,10 @@ public class LoadtoDestination extends AppCompatActivity {
                 return true;
 
             case R.id.save:
-                SaveData();
+                if (GlobalVar.ValidateAutomacticDate(getApplicationContext()))
+                    SaveData();
+                else
+                    GlobalVar.RedirectSettings(LoadtoDestination.this);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);

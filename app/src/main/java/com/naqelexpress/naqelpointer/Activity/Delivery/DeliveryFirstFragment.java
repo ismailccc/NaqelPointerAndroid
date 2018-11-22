@@ -4,6 +4,7 @@ import android.Manifest;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -19,15 +20,18 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
 
 import com.naqelexpress.naqelpointer.Classes.NewBarCodeScanner;
+import com.naqelexpress.naqelpointer.DB.DBConnections;
 import com.naqelexpress.naqelpointer.GlobalVar;
 import com.naqelexpress.naqelpointer.JSON.Request.GetWaybillDetailsRequest;
 import com.naqelexpress.naqelpointer.JSON.Results.WaybillDetailsResult;
 import com.naqelexpress.naqelpointer.R;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -49,7 +53,7 @@ import static android.content.Context.TELEPHONY_SERVICE;
 public class DeliveryFirstFragment
         extends Fragment {
 
-    public ArrayList<String> ShipmentBarCodeList = new ArrayList<>();
+    public static ArrayList<String> ShipmentBarCodeList = new ArrayList<>();
     public static EditText txtWaybillNo;
     private TextView txtConsigneeName;
     public TextView txtBillingType;
@@ -69,6 +73,7 @@ public class DeliveryFirstFragment
     TelephonyManager mTelephonyManager;
     boolean watsapp_sms = false;
     boolean signrequired = false;
+    static int al = 0;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -79,6 +84,7 @@ public class DeliveryFirstFragment
             mTelephonyManager = (TelephonyManager) rootView.getContext().getSystemService(TELEPHONY_SERVICE);
 
 
+            CheckBox actualLocation = (CheckBox) rootView.findViewById(R.id.alocation);
             txtWaybillNo = (EditText) rootView.findViewById(R.id.txtWaybilll);
             txtConsigneeName = (TextView) rootView.findViewById(R.id.txtConsigneeName);
             txtBillingType = (TextView) rootView.findViewById(R.id.txtBillingType);
@@ -98,6 +104,19 @@ public class DeliveryFirstFragment
 
             txtMobileNo.setTag(0);
             txtPhoneNo.setTag(0);
+
+            actualLocation.setOnClickListener(new View.OnClickListener() {
+
+                @Override
+                public void onClick(View v) {
+                    //is chkIos checked?
+                    if (((CheckBox) v).isChecked()) {
+                        al = 1;
+                    } else
+                        al = 0;
+
+                }
+            });
 
             btnCallMobile.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -200,32 +219,9 @@ public class DeliveryFirstFragment
                 public void onClick(View v) {
                     if (!txtWaybillNo.getText().toString().equals("") &&
                             txtWaybillNo.getText().length() > 7) {
+                        ShipmentBarCodeList.clear();
+                        GetWayBillInfo();
 
-
-                        GlobalVar.hideKeyboardFrom(getContext(), rootView);
-                        GetWaybillDetailsRequest getWaybillDetailsRequest = new GetWaybillDetailsRequest();
-                        NumberFormat nf = NumberFormat.getInstance(Locale.ENGLISH);
-                        try {
-                            getWaybillDetailsRequest.WaybillNo = Integer.parseInt(String.valueOf(nf.parse(txtWaybillNo.getText().toString())));
-
-                        } catch (ParseException e) {
-                            e.printStackTrace();
-                        }
-
-                        JSONObject jsonObject = new JSONObject();
-                        try {
-
-                            jsonObject.put("WaybillNo", getWaybillDetailsRequest.WaybillNo);
-                            jsonObject.put("AppTypeID", getWaybillDetailsRequest.AppTypeID);
-                            jsonObject.put("AppVersion", getWaybillDetailsRequest.AppVersion);
-                            jsonObject.put("LanguageID", getWaybillDetailsRequest.LanguageID);
-                            String jsonData = jsonObject.toString();
-
-                            new GetWaybillDetailsInfo().execute(jsonData);
-
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
                     } else
                         GlobalVar.GV().ShowSnackbar(rootView, getString(R.string.validwaybill), GlobalVar.AlertType.Error);
                 }
@@ -362,6 +358,135 @@ public class DeliveryFirstFragment
 
             }
         }
+    }
+
+    private void GetWayBillInfo() {
+        String waybillno = txtWaybillNo.getText().toString().substring(0, 8);
+        DBConnections dbConnections = new DBConnections(getContext(), null);
+        Cursor result = dbConnections.Fill("select * from MyRouteShipments Where ItemNo = '" + waybillno + "'",
+                getContext());
+        if (result.getCount() > 0) {
+            ReadFromLocal(result, dbConnections);
+        } else {
+            GlobalVar.hideKeyboardFrom(getContext(), rootView);
+            GetWaybillDetailsRequest getWaybillDetailsRequest = new GetWaybillDetailsRequest();
+            NumberFormat nf = NumberFormat.getInstance(Locale.ENGLISH);
+            try {
+                getWaybillDetailsRequest.WaybillNo = Integer.parseInt(String.valueOf(nf.parse(txtWaybillNo.getText().toString())));
+
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+
+            JSONObject jsonObject = new JSONObject();
+            try {
+
+                jsonObject.put("WaybillNo", getWaybillDetailsRequest.WaybillNo);
+                jsonObject.put("AppTypeID", getWaybillDetailsRequest.AppTypeID);
+                jsonObject.put("AppVersion", getWaybillDetailsRequest.AppVersion);
+                jsonObject.put("LanguageID", getWaybillDetailsRequest.LanguageID);
+                String jsonData = jsonObject.toString();
+
+                new GetWaybillDetailsInfo().execute(jsonData);
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+
+
+    }
+
+    private void ReadFromLocal(Cursor result, DBConnections dbConnections) {
+
+        result.moveToFirst();
+
+        JSONObject jsonObject = new JSONObject();
+        try {
+            jsonObject.put("ID", result.getString(result.getColumnIndex("ID")));
+            jsonObject.put("WaybillNo", result.getString(result.getColumnIndex("ItemNo")));
+            jsonObject.put("PiecesCount", result.getString(result.getColumnIndex("PiecesCount")));
+            jsonObject.put("Weight", result.getString(result.getColumnIndex("Weight")));
+            jsonObject.put("BillingType", result.getString(result.getColumnIndex("BillingType")));
+            jsonObject.put("CODAmount", result.getString(result.getColumnIndex("CODAmount")));
+            jsonObject.put("ConsigneeName", result.getString(result.getColumnIndex("ConsigneeName")));
+            jsonObject.put("ConsigneeFName", result.getString(result.getColumnIndex("ConsigneeFName")));
+            jsonObject.put("PhoneNo", result.getString(result.getColumnIndex("ConsigneePhoneNumber")));
+            jsonObject.put("MobileNo", result.getString(result.getColumnIndex("ConsigneeMobile")));
+            jsonObject.put("Address", result.getString(result.getColumnIndex("ConsigneeFirstAddress")));
+            jsonObject.put("SecondLine", result.getString(result.getColumnIndex("ConsigneeSecondAddress")));
+            jsonObject.put("Near", result.getString(result.getColumnIndex("ConsigneeNear")));
+            jsonObject.put("CityName", "");
+            jsonObject.put("CityFName", "");
+            jsonObject.put("Sign", result.getInt(result.getColumnIndex("Sign")));
+            jsonObject.put("ClientID", result.getInt(result.getColumnIndex("ClientID")));
+            JSONObject coordinates = new JSONObject();
+            coordinates.put("Latitude", result.getString(result.getColumnIndex("Latitude")));
+            coordinates.put("Longitude", result.getString(result.getColumnIndex("Longitude")));
+            jsonObject.put("locationCoordinate", coordinates);
+
+            Cursor barcodecursor = dbConnections.Fill("select * from BarCode Where WayBillNo = '" + result.getString(result.getColumnIndex("ItemNo"))
+                    + "'", getContext());
+            JSONArray jsonArray = new JSONArray();
+            if (barcodecursor.getCount() > 0) {
+                barcodecursor.moveToFirst();
+                do {
+
+                    jsonArray.put(barcodecursor.getString(barcodecursor.getColumnIndex("BarCode")));
+                } while (barcodecursor.moveToNext());
+            }
+
+            jsonObject.put("BarCodeList", jsonArray);
+
+            result.close();
+            barcodecursor.close();
+            dbConnections.close();
+
+            WaybillDetailsResult waybillDetailsResult = new WaybillDetailsResult(jsonObject.toString());
+
+            txtBillingType.setText(getResources().getString(R.string.txtBillingType) + waybillDetailsResult.BillingType);
+            txtCODAmount.setText(getResources().getString(R.string.txtCODAmount) + waybillDetailsResult.CODAmount);
+            txtWeight.setText(getResources().getString(R.string.txtWeight) + waybillDetailsResult.Weight);
+            txtPiecesCount.setText(getResources().getString(R.string.txtPiecesCount) + waybillDetailsResult.PiecesCount);
+
+            signrequired = waybillDetailsResult.signrequired;
+            if (GlobalVar.GV().IsEnglish())
+                txtConsigneeName.setText(getResources().getString(R.string.txtConsigneeName) + waybillDetailsResult.ConsigneeName);
+            else
+                txtConsigneeName.setText(getResources().getString(R.string.txtConsigneeName) + waybillDetailsResult.ConsigneeName);
+
+            txtAddress.setText(getResources().getString(R.string.txtAddress) + waybillDetailsResult.Address);
+
+            txtSecondAddress.setText(getResources().getString(R.string.txtSecondAddress) + waybillDetailsResult.SecondLine);
+            txtNear.setText(getResources().getString(R.string.txtNear) + waybillDetailsResult.Near);
+            txtMobileNo.setText(getResources().getString(R.string.txtMobileNo) + waybillDetailsResult.MobileNo);
+            txtMobileNo.setTag(waybillDetailsResult.MobileNo);
+            txtPhoneNo.setText(getResources().getString(R.string.txtPhoneNo) + waybillDetailsResult.PhoneNo);
+            txtPhoneNo.setTag(waybillDetailsResult.PhoneNo);
+
+
+            ShipmentBarCodeList = new ArrayList<>();
+            for (int i = 0; i < waybillDetailsResult.BarCodeList.size(); i++) {
+                ShipmentBarCodeList.add(waybillDetailsResult.BarCodeList.get(i));
+            }
+
+            initViews();
+            //boolean validate = hasWatsapp(txtMobileNo.getTag().toString(), txtPhoneNo.getTag().toString());
+            boolean validate = true;
+
+            if (!validate) {
+                watsapp_sms = false;
+                btnWhatsApp.setImageDrawable(ContextCompat.getDrawable(getActivity(), android.R.drawable.sym_action_email));
+                btnWhatsApp1.setImageDrawable(ContextCompat.getDrawable(getActivity(), android.R.drawable.sym_action_email));
+            } else {
+                watsapp_sms = true;
+                btnWhatsApp.setImageDrawable(ContextCompat.getDrawable(getActivity(), R.drawable.whatsapp));
+                btnWhatsApp1.setImageDrawable(ContextCompat.getDrawable(getActivity(), R.drawable.whatsapp));
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
     }
 
     private class GetWaybillDetailsInfo extends AsyncTask<String, Void, String> {

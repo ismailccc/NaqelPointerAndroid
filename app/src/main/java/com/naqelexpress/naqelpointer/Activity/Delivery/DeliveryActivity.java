@@ -52,6 +52,7 @@ public class DeliveryActivity
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.delivery);
+
         bundle = getIntent().getExtras();
         TimeIn = DateTime.now();
 
@@ -133,12 +134,19 @@ public class DeliveryActivity
         switch (item.getItemId()) {
             case R.id.mnuSave:
                 if (firstFragment.signrequired)
-                    if (secondFragment.signmand == 1)
+                    if (secondFragment.signmand == 1) {
+                        if (GlobalVar.ValidateAutomacticDate(getApplicationContext()))
+                            SaveData();
+                        else
+                            GlobalVar.RedirectSettings(DeliveryActivity.this);
+                    } else
+                        Toast.makeText(DeliveryActivity.this, "Kindly get Signature from Customer.", Toast.LENGTH_SHORT).show();
+                else {
+                    if (GlobalVar.ValidateAutomacticDate(getApplicationContext()))
                         SaveData();
                     else
-                        Toast.makeText(DeliveryActivity.this, "Kindly get Signature from Customer.", Toast.LENGTH_SHORT).show();
-                else
-                    SaveData();
+                        GlobalVar.RedirectSettings(DeliveryActivity.this);
+                }
 
                 return true;
             default:
@@ -175,7 +183,7 @@ public class DeliveryActivity
             if (result.getCount() > 0)
                 dbConnections.UpdateComplaint_Delivered(GlobalVar.getDate(), getApplicationContext());
 
-            if (dbConnections.InsertOnDelivery(onDelivery, getApplicationContext())) {
+            if (dbConnections.InsertOnDelivery(onDelivery, getApplicationContext(), firstFragment.al)) {
                 int DeliveryID = dbConnections.getMaxID("OnDelivery", getApplicationContext());
                 for (int i = 0; i < thirdFragment.DeliveryBarCodeList.size(); i++) {
                     OnDeliveryDetail onDeliveryDetail = new OnDeliveryDetail(thirdFragment.DeliveryBarCodeList.get(i), DeliveryID);
@@ -305,10 +313,10 @@ public class DeliveryActivity
                 case 2:
                     if (thirdFragment == null) {
                         thirdFragment = new DeliveryThirdFragment();
-                        thirdFragment.ShipmentBarCodeList = firstFragment.ShipmentBarCodeList;
+                      //  thirdFragment.ShipmentBarCodeList = firstFragment.ShipmentBarCodeList;
                         return thirdFragment;
                     } else {
-                        thirdFragment.ShipmentBarCodeList = firstFragment.ShipmentBarCodeList;
+                       // thirdFragment.ShipmentBarCodeList = firstFragment.ShipmentBarCodeList;
                         return thirdFragment;
                     }
             }

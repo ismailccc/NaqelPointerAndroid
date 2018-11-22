@@ -23,6 +23,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.widget.CheckBox;
 
 import com.naqelexpress.naqelpointer.Activity.Booking.Booking;
 import com.naqelexpress.naqelpointer.Activity.WaybillMeasurments.WaybillMeasurementActivity;
@@ -60,11 +61,13 @@ public class PickUpActivity extends AppCompatActivity {
     int position;
     String class_;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.pickup);
+
 
 
         Bundle bundle = getIntent().getExtras();
@@ -105,8 +108,11 @@ public class PickUpActivity extends AppCompatActivity {
                 BringPickUpData();
                 return true;
             case R.id.mnuSave:
-                SaveData();
-
+                //SaveData();
+                if (GlobalVar.ValidateAutomacticDate(getApplicationContext()))
+                    SaveData();
+                else
+                    GlobalVar.RedirectSettings(PickUpActivity.this);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -166,7 +172,7 @@ public class PickUpActivity extends AppCompatActivity {
             int pos = firstFragment.Loadtype.getSelectedItemPosition();
             loadtypeid = Integer.parseInt(firstFragment.clientdetails.get(pos).get("LoadTypeID"));
         }
-        if (dbConnections.InsertPickUp(pickUp, getApplicationContext(), loadtypeid)) {
+        if (dbConnections.InsertPickUp(pickUp, getApplicationContext(), loadtypeid,firstFragment.al)) {
             int PickUpID = dbConnections.getMaxID("PickUp", getApplicationContext());
             for (int i = 0; i < secondFragment.PickUpBarCodeList.size(); i++) {
                 PickUpDetail pickUpDetail = new PickUpDetail(secondFragment.PickUpBarCodeList.get(i), PickUpID);
@@ -634,16 +640,27 @@ public class PickUpActivity extends AppCompatActivity {
                         GlobalVar.GV().ShowSnackbar(getWindow().getDecorView().getRootView(), "This WaybillNo Already Picked Up",
                                 GlobalVar.AlertType.Error, true, getApplicationContext());
                         //             DuplicateWaybillNo("Info", "This WaybillNo Already Picked Up");
-                    } else
-                        SaveData("");
+                    } else {
+                        if (GlobalVar.ValidateAutomacticDate(getApplicationContext()))
+                            SaveData("");
+                        else
+                            GlobalVar.RedirectSettings(PickUpActivity.this);
+                    }
 
 
                 } catch (JSONException e) {
                     e.printStackTrace();
-                    SaveData("");
+                    if (GlobalVar.ValidateAutomacticDate(getApplicationContext()))
+                        SaveData("");
+                    else
+                        GlobalVar.RedirectSettings(PickUpActivity.this);
                 }
-            } else
-                SaveData("");
+            } else {
+                if (GlobalVar.ValidateAutomacticDate(getApplicationContext()))
+                    SaveData("");
+                else
+                    GlobalVar.RedirectSettings(PickUpActivity.this);
+            }
             progressDialog.dismiss();
         }
     }

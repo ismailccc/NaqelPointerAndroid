@@ -7,6 +7,7 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
 import android.widget.EditText;
 
 import com.naqelexpress.naqelpointer.R;
@@ -15,6 +16,7 @@ public class MultiDeliveryFirstFragment
         extends Fragment {
     View rootView;
     public EditText txtReceiverName;
+    static int al = 0;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -22,7 +24,20 @@ public class MultiDeliveryFirstFragment
         if (rootView == null) {
             rootView = inflater.inflate(R.layout.multideliveryfirstfragment, container, false);
             txtReceiverName = (EditText) rootView.findViewById(R.id.txtCheckPointType);
+            CheckBox actualLocation = (CheckBox) rootView.findViewById(R.id.alocation);
 
+            actualLocation.setOnClickListener(new View.OnClickListener() {
+
+                @Override
+                public void onClick(View v) {
+                    //is chkIos checked?
+                    if (((CheckBox) v).isChecked()) {
+                        al = 1;
+                    } else
+                        al = 0;
+
+                }
+            });
         }
 
         return rootView;

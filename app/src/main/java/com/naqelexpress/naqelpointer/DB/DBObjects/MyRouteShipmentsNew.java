@@ -20,7 +20,6 @@ import com.google.android.gms.maps.model.LatLng;
 import com.naqelexpress.naqelpointer.Activity.MyRoute.MyRouteActivity;
 import com.naqelexpress.naqelpointer.DB.DBConnections;
 import com.naqelexpress.naqelpointer.GlobalVar;
-import com.naqelexpress.naqelpointer.R;
 
 import org.joda.time.DateTime;
 import org.json.JSONArray;
@@ -29,7 +28,7 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
-public class MyRouteShipments implements Parcelable {
+public class MyRouteShipmentsNew implements Parcelable {
     public int ID = 0;
     public int OrderNo = 0;
     public String ItemNo = "";
@@ -75,24 +74,25 @@ public class MyRouteShipments implements Parcelable {
     public String PiecesCount = "";
     public String Weight = "";
 
-
-    public MyRouteShipments() {
+    public MyRouteShipmentsNew() {
 
     }
 
-    public MyRouteShipments(int id) {
+    public MyRouteShipmentsNew(int id) {
         ID = id;
     }
 
-    public MyRouteShipments(String finalJson, String Latitude, String Longitude, Context context, View view) {
+    public MyRouteShipmentsNew(String finalJson, String Latitude, String Longitude, Context context, View view) {
 
         JSONArray jsonObjectDeliverySheet = null;
         JSONArray Complaint = null;
+        JSONArray BarCode = null;
 
         try {
             JSONObject jsonObjectHeader = new JSONObject(finalJson);
             jsonObjectDeliverySheet = jsonObjectHeader.getJSONArray("DeliverySheet");
             Complaint = jsonObjectHeader.getJSONArray("Complaint");
+            BarCode = jsonObjectHeader.getJSONArray("BarCode");
 
         } catch (JSONException e) {
             GlobalVar.GV().ShowSnackbar(view, "No Data with this ID", GlobalVar.AlertType.Error);
@@ -124,7 +124,7 @@ public class MyRouteShipments implements Parcelable {
             JSONArray jsonArray = jsonObjectDeliverySheet;
 
             for (int i = 0; i < jsonArray.length(); i++) {
-                MyRouteShipments instance = new MyRouteShipments();
+                MyRouteShipmentsNew instance = new MyRouteShipmentsNew();
                 jsonObject = jsonArray.getJSONObject(i);
 
                 //instance.ID = i + 1;
@@ -186,26 +186,14 @@ public class MyRouteShipments implements Parcelable {
                 instance.PODDetail = jsonObject.getString("PODDetail");
                 instance.PODTypeCode = jsonObject.getString("PODTypeCode");
                 instance.PODTypeName = jsonObject.getString("PODTypeName");
-                instance.PiecesCount = String.valueOf(jsonObject.getString("PiecesCount"));
-                instance.Weight = String.valueOf(jsonObject.getString("Weight"));
+                instance.Header = "";
+                instance.PiecesCount = String.valueOf(jsonObject.getInt("PiecesCount"));
+                instance.Weight = String.valueOf(jsonObject.getDouble("Weight"));
                 if (jsonObject.getBoolean("Sign"))
                     instance.Sign = 1;
                 else
                     instance.Sign = 0;
 
-                instance.Header = "";
-
-
-                if (GlobalVar.GV().CourierDailyRouteID == 0) {
-                    CourierDailyRoute courierDailyRoute = new CourierDailyRoute();
-                    courierDailyRoute.StartLatitude = String.valueOf(Latitude);
-                    courierDailyRoute.StartLongitude = String.valueOf(Longitude);
-
-                    if (dbConnections.InsertCourierDailyRoute(courierDailyRoute, context))
-                        GlobalVar.GV().CourierDailyRouteID = dbConnections.getMaxID("CourierDailyRoute Where EmployID = " + GlobalVar.GV().EmployID + " and EndTime is NULL ", context);
-                    else
-                        GlobalVar.GV().ShowSnackbar(view, context.getString(R.string.ErrorWhileSaving), GlobalVar.AlertType.Error);
-                }
 
                 for (int j = 0; j < Complaint.length(); j++) {
                     JSONObject jo = Complaint.getJSONObject(j);
@@ -217,14 +205,11 @@ public class MyRouteShipments implements Parcelable {
                 }
 
 
-                if (GlobalVar.GV().CourierDailyRouteID > 0) {
-                    instance.CourierDailyRouteID = GlobalVar.GV().CourierDailyRouteID;
-                    {
-                        //JSONArray jsonArraycompl = new JSONArray(Complaint);
+                //JSONArray jsonArraycompl = new JSONArray(Complaint);
 
 
-                        dbConnections.InsertMyRouteShipments(instance, context);
-                    }
+                dbConnections.InsertMyRouteShipments(instance, context);
+
 
 //                    if (!instance.ConsigneeMobile.equals("null") && instance.ConsigneeMobile != null && !instance.ConsigneeMobile.equals("0")
 //                            && instance.ConsigneeMobile.length() > 0) {
@@ -247,7 +232,14 @@ public class MyRouteShipments implements Parcelable {
 //                    }
 
 
-                }
+            }
+
+            for (int j = 0; j < BarCode.length(); j++) {
+                JSONObject jo = BarCode.getJSONObject(j);
+                String waybillno = String.valueOf(jo.getInt("WayBillNo"));
+                String barcode = jo.getString("BarCode");
+                dbConnections.InsertBarCode(waybillno, barcode, context);
+
             }
 
 
@@ -262,7 +254,7 @@ public class MyRouteShipments implements Parcelable {
     }
 
 
-    protected MyRouteShipments(Parcel in) {
+    protected MyRouteShipmentsNew(Parcel in) {
         ID = in.readInt();
         OrderNo = in.readInt();
         ItemNo = in.readString();
@@ -305,15 +297,15 @@ public class MyRouteShipments implements Parcelable {
         HasDeliveryRequest = in.readByte() != 0;
     }
 
-    public static final Creator<MyRouteShipments> CREATOR = new Creator<MyRouteShipments>() {
+    public static final Creator<MyRouteShipmentsNew> CREATOR = new Creator<MyRouteShipmentsNew>() {
         @Override
-        public MyRouteShipments createFromParcel(Parcel in) {
-            return new MyRouteShipments(in);
+        public MyRouteShipmentsNew createFromParcel(Parcel in) {
+            return new MyRouteShipmentsNew(in);
         }
 
         @Override
-        public MyRouteShipments[] newArray(int size) {
-            return new MyRouteShipments[size];
+        public MyRouteShipmentsNew[] newArray(int size) {
+            return new MyRouteShipmentsNew[size];
         }
     };
 
@@ -462,7 +454,7 @@ public class MyRouteShipments implements Parcelable {
         DeliveryRequestAndComplaint
     }
 
-    public MyRouteShipments(String finalJson, UpdateType updateType, Context context, View view) {
+    public MyRouteShipmentsNew(String finalJson, UpdateType updateType, Context context, View view) {
         JSONObject jsonObject;
         DBConnections dbConnections = new DBConnections(context, null);
         if (updateType == UpdateType.Optimization) {

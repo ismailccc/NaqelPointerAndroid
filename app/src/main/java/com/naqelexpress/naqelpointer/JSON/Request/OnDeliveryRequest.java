@@ -22,6 +22,8 @@ public class OnDeliveryRequest
     public double ReceivedAmt ;
     public double POSAmount ;
     public double CashAmount ;
+    public int al;
+
 //    public String ReceiptNo ;
 //    public int StopPointsID ;
     public List<OnDeliveryDetailRequest> OnDeliveryDetailRequestList;

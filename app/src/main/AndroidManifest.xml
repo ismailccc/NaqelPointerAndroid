@@ -265,6 +265,12 @@
             android:name=".Activity.routeMap.RouteMap_Distance"
             android:theme="@style/trans" />
 
+        <activity
+            android:name=".Activity.EBURoute.DeliverySheet"
+            android:label="DeliverySheet"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar" />
+
         <service
             android:name="com.naqelexpress.naqelpointer.service.signature"
             android:process=":naqelsignature" />

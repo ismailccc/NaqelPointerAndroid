@@ -8,8 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class PickUpRequest
-        extends DefaultRequest
-{
+        extends DefaultRequest {
     public int ID;
     public String WaybillNo;
     public int ClientID;
@@ -25,12 +24,12 @@ public class PickUpRequest
     public String Latitude;
     public String Longitude;
     public int LoadTypeID;
-//    public double ReceivedAmount;
+    public int al;
+    //    public double ReceivedAmount;
     public String CurrentVersion = GlobalVar.GV().AppVersion;
     public List<PickUpDetailRequest> PickUpDetailRequestList;
 
-    public PickUpRequest()
-    {
+    public PickUpRequest() {
         PickUpDetailRequestList = new ArrayList<>();
     }
 }

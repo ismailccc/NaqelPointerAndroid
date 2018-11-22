@@ -96,7 +96,7 @@ public class MultiDelivery extends Service {
         try {
             DBConnections db = new DBConnections(getApplicationContext(), null);
 
-            Cursor result = db.Fill("select * from MultiDelivery where IsSync = 0 Limit 1 ",getApplicationContext());
+            Cursor result = db.Fill("select * from MultiDelivery where IsSync = 0 Limit 1 ", getApplicationContext());
 
 
             if (result.getCount() > 0) {
@@ -114,13 +114,14 @@ public class MultiDelivery extends Service {
                     multiDeliveryRequest.StationID = Integer.parseInt(result.getString(result.getColumnIndex("StationID")));
                     multiDeliveryRequest.WaybillsCount = Integer.parseInt(result.getString(result.getColumnIndex("WaybillsCount")));
                     multiDeliveryRequest.Latitude = result.getString(result.getColumnIndex("Latitude"));
-                    multiDeliveryRequest.Longitude = result.getString(result.getColumnIndex("StationID"));
+                    multiDeliveryRequest.Longitude = result.getString(result.getColumnIndex("Longitude"));
                     multiDeliveryRequest.ReceivedAmt = Double.parseDouble(result.getString(result.getColumnIndex("ReceivedAmt")));
                     multiDeliveryRequest.ReceiptNo = result.getString(result.getColumnIndex("ReceiptNo"));
                     multiDeliveryRequest.StopPointsID = Integer.parseInt(result.getString(result.getColumnIndex("StopPointsID")));
+                    multiDeliveryRequest.al = result.getInt(result.getColumnIndex("AL"));
 
                     Cursor resultDetail = db.Fill("select * from MultiDeliveryWaybillDetail where MultiDeliveryID = "
-                            + multiDeliveryRequest.ID,getApplicationContext());
+                            + multiDeliveryRequest.ID, getApplicationContext());
 
                     if (resultDetail.getCount() > 0) {
                         resultDetail.moveToFirst();
@@ -135,7 +136,7 @@ public class MultiDelivery extends Service {
                         while (resultDetail.moveToNext());
                     }
 
-                    resultDetail = db.Fill("select * from MultiDeliveryDetail where MultiDeliveryID = " + multiDeliveryRequest.ID,getApplicationContext());
+                    resultDetail = db.Fill("select * from MultiDeliveryDetail where MultiDeliveryID = " + multiDeliveryRequest.ID, getApplicationContext());
 
                     if (resultDetail.getCount() > 0) {
                         resultDetail.moveToFirst();
@@ -180,9 +181,9 @@ public class MultiDelivery extends Service {
 
                 try {
                     if (response.contains("Created")) {
-                        db.deleteMultiDeliveryID(id,getApplicationContext());
-                        db.deleteMultiDeliveryWayBill(id,getApplicationContext());
-                        db.deleteMultiDeliveryBarcode(id,getApplicationContext());
+                        db.deleteMultiDeliveryID(id, getApplicationContext());
+                        db.deleteMultiDeliveryWayBill(id, getApplicationContext());
+                        db.deleteMultiDeliveryBarcode(id, getApplicationContext());
                         flag_thread = false;
 
 

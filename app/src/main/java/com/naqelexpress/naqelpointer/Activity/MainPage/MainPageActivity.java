@@ -42,6 +42,7 @@ import com.naqelexpress.naqelpointer.Activity.CheckCOD.CODCheckingActivity;
 import com.naqelexpress.naqelpointer.Activity.CheckPoints.CheckPointsActivity;
 import com.naqelexpress.naqelpointer.Activity.Delivery.DeliveryActivity;
 import com.naqelexpress.naqelpointer.Activity.DeliverySheet.DeliverySheetActivity;
+import com.naqelexpress.naqelpointer.Activity.EBURoute.DeliverySheet;
 import com.naqelexpress.naqelpointer.Activity.History.History;
 import com.naqelexpress.naqelpointer.Activity.LoadtoDest.LoadtoDestination;
 import com.naqelexpress.naqelpointer.Activity.Login.LoginActivity;
@@ -96,7 +97,8 @@ public class MainPageActivity
             R.drawable.ld,
             R.drawable.importtruck,
             R.drawable.contacts,
-            R.drawable.closetrip
+            R.drawable.closetrip,
+            R.drawable.maplist
 
     };
     GridView gridView;
@@ -159,7 +161,7 @@ public class MainPageActivity
 
         //GlobalVar.GV().sendSMS("+966580679791","text",getApplicationContext());
 
-        cellTitle = new String[18];
+        cellTitle = new String[19];
         cellTitle[0] = getResources().getString(R.string.DeliverySheetActivity);
         cellTitle[1] = getResources().getString(R.string.MyRouteActivity);
         cellTitle[2] = getResources().getString(R.string.DeliveryActivity);
@@ -179,6 +181,7 @@ public class MainPageActivity
         cellTitle[15] = "Arrived Dest";
         cellTitle[16] = "Contacts";
         cellTitle[17] = "Validate DS";
+        cellTitle[18] = "MyRoute EBU";
 
         MainPageNavigation();
 
@@ -473,6 +476,17 @@ public class MainPageActivity
 //
 //}
 
+    private boolean LoadDeliverysheet() {
+        DBConnections dbConnections = new DBConnections(getApplicationContext(), null);
+        Cursor result = dbConnections.Fill("select * from MyRouteShipments Where DDate = '" +
+                GlobalVar.getDate() + "' and EmpID = " + GlobalVar.GV().EmployID, getApplicationContext());
+        if (result.getCount() > 0)
+            return true;
+        else
+            return false;
+
+    }
+
     public void MainPageNavigation() {
         gridView = (GridView) findViewById(R.id.gridView);
         MainPageCellAdapter adapter = new MainPageCellAdapter(MainPageActivity.this, cellIcon, cellTitle);
@@ -490,12 +504,12 @@ public class MainPageActivity
                         break;
                     case 1:
 
-                        if (GlobalVar.AskPermission_Location(MainPageActivity.this)) {
+                        if (GlobalVar.AskPermission_Location(MainPageActivity.this, 1)) {
                             if (!GlobalVar.isMyServiceRunning(LocationService.class, getApplicationContext())) {
                                 startService(new Intent(getBaseContext(),
                                         LocationService.class));
                             }
-                            if (GlobalVar.AskPermission_Contcatcs(MainPageActivity.this)) {
+                            if (GlobalVar.AskPermission_Contcatcs(MainPageActivity.this, 111)) {
                                 Intent mapList = new Intent(getApplicationContext(), MyRouteActivity.class);
                                 startActivity(mapList);
                             }
@@ -504,28 +518,34 @@ public class MainPageActivity
                     case 2:
                         if (GlobalVar.AskPermission_Camera(MainPageActivity.this, 2)) {
 
-                            Intent delivery = new Intent(getApplicationContext(), DeliveryActivity.class);
-                            startActivity(delivery);
-
-//                            ActivityCompat.requestPermissions(
-//                                    MainPageActivity.this,
-//                                    new String[]{Manifest.permission.READ_CALL_LOG, Manifest.permission.WRITE_CALL_LOG, Manifest.permission.WRITE_CONTACTS
-//                                            , Manifest.permission.READ_CONTACTS, Manifest.permission.CALL_PHONE, Manifest.permission.READ_PHONE_STATE
-//                                            , Manifest.permission.READ_SMS, Manifest.permission.SEND_SMS,
-//                                            Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_PHONE_NUMBERS},
-//                                    7
-//                            );
+                            if (LoadDeliverysheet()) {
+                                Intent delivery = new Intent(getApplicationContext(), DeliveryActivity.class);
+                                startActivity(delivery);
+                            } else {
+                                GlobalVar.GV().ShowDialog(MainPageActivity.this, "Info.", "Kindly Load DeliverySheet,Press MyRoute"
+                                        , true);
+                            }
 
                         }
                         break;
                     case 3:
-                        Intent multiDelivery = new Intent(getApplicationContext(), MultiDeliveryActivity.class);
-                        startActivity(multiDelivery);
+                        if (LoadDeliverysheet()) {
+                            Intent multiDelivery = new Intent(getApplicationContext(), MultiDeliveryActivity.class);
+                            startActivity(multiDelivery);
+                        } else {
+                            GlobalVar.GV().ShowDialog(MainPageActivity.this, "Info.", "Kindly Load DeliverySheet,Press MyRoute"
+                                    , true);
+                        }
                         break;
                     case 4:
                         if (GlobalVar.AskPermission_Camera(MainPageActivity.this, 3)) {
-                            Intent notDelivered = new Intent(getApplicationContext(), NotDeliveredActivity.class);
-                            startActivity(notDelivered);
+                            if (LoadDeliverysheet()) {
+                                Intent notDelivered = new Intent(getApplicationContext(), NotDeliveredActivity.class);
+                                startActivity(notDelivered);
+                            } else {
+                                GlobalVar.GV().ShowDialog(MainPageActivity.this, "Info.", "Kindly Load DeliverySheet,Press MyRoute"
+                                        , true);
+                            }
                         }
                         break;
                     case 5:
@@ -591,6 +611,18 @@ public class MainPageActivity
                     case 17:
                         Intent cvds = new Intent(getApplicationContext(), ValidationDS.class);
                         startActivity(cvds);
+                        break;
+                    case 18:
+                        if (GlobalVar.AskPermission_Location(MainPageActivity.this, 8)) {
+                            if (!GlobalVar.isMyServiceRunning(LocationService.class, getApplicationContext())) {
+                                startService(new Intent(getBaseContext(),
+                                        LocationService.class));
+                            }
+                            if (GlobalVar.AskPermission_Contcatcs(MainPageActivity.this, 9)) {
+                                Intent eburoute = new Intent(getApplicationContext(), DeliverySheet.class);
+                                startActivity(eburoute);
+                            }
+                        }
                         break;
                 }
             }
@@ -664,7 +696,7 @@ public class MainPageActivity
                         startService(new Intent(getBaseContext(),
                                 LocationService.class));
                     }
-                    if (GlobalVar.AskPermission_Contcatcs(MainPageActivity.this)) {
+                    if (GlobalVar.AskPermission_Contcatcs(MainPageActivity.this, 1)) {
                         Intent mapList = new Intent(getApplicationContext(), MyRouteActivity.class);
                         startActivity(mapList);
                     }
@@ -803,6 +835,43 @@ public class MainPageActivity
                         }
                     }
                 }
+                break;
+            case 8:
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                    if (!GlobalVar.isMyServiceRunning(LocationService.class, getApplicationContext())) {
+                        startService(new Intent(getBaseContext(),
+                                LocationService.class));
+                    }
+                    if (GlobalVar.AskPermission_Contcatcs(MainPageActivity.this, 8)) {
+                        Intent mapList = new Intent(getApplicationContext(), DeliverySheet.class);
+                        startActivity(mapList);
+                    }
+
+                } else {
+                    //  GlobalVar.AskPermission_Location(MainPageActivity.this);
+                    Intent i = new Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + BuildConfig.APPLICATION_ID));
+                    startActivity(i);
+                    GlobalVar.GV().ShowSnackbar(getWindow().getDecorView().getRootView(), "Our app need the Contacts Permission,please kindly allow me", GlobalVar.AlertType.Error);
+                }
+                break;
+            case 9:
+
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                    Intent mapList = new Intent(getApplicationContext(), DeliverySheet.class);
+                    startActivity(mapList);
+
+
+                } else {
+                    //  GlobalVar.AskPermission_Location(MainPageActivity.this);
+                    Intent i = new Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + BuildConfig.APPLICATION_ID));
+                    startActivity(i);
+                    GlobalVar.GV().ShowSnackbar(getWindow().getDecorView().getRootView(), "Our app need the Contacts Permission,please kindly allow me", GlobalVar.AlertType.Error);
+                }
+                break;
         }
 
     }

@@ -12,6 +12,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
@@ -59,6 +60,7 @@ public class PickUpFirstFragment
     static Spinner Loadtype;
     PickupAdapter adapter;
     public static ArrayList<HashMap<String, String>> clientdetails;
+    static int al = 0;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -68,6 +70,7 @@ public class PickUpFirstFragment
         if (rootView == null) {
             rootView = inflater.inflate(R.layout.pickupfirstfragmentnew, container, false);
 
+            CheckBox actualLocation = (CheckBox) rootView.findViewById(R.id.alocation);
             txtOrigin = (EditText) rootView.findViewById(R.id.txtOrigin);
             txtOrigin.setInputType(InputType.TYPE_NULL);
             OriginID = GlobalVar.GV().StationID;
@@ -90,6 +93,20 @@ public class PickUpFirstFragment
             adapter = new PickupAdapter(clientdetails, getContext());
             //adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
             Loadtype.setAdapter(adapter);
+
+
+            actualLocation.setOnClickListener(new View.OnClickListener() {
+
+                @Override
+                public void onClick(View v) {
+                    //is chkIos checked?
+                    if (((CheckBox) v).isChecked()) {
+                        al = 1;
+                    } else
+                        al = 0;
+
+                }
+            });
 
 
             if (savedInstanceState == null) {

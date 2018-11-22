@@ -54,7 +54,7 @@ public class MyRouteActivity
     private RouteListAdapter adapter;
     Button btnStartTrip, btnCloseTrip;
     TextView txtStartTrip, txtCloseTrip;
-    public static ArrayList<Location> places = new ArrayList<>();
+    public static ArrayList<Location> places = new ArrayList<>();//96346
     protected boolean flag_thread = false;
     static int progressflag = 0;
 

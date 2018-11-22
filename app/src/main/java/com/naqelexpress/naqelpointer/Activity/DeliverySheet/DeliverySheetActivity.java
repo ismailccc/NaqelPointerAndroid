@@ -84,7 +84,10 @@ public class DeliverySheetActivity
         // Handle item selection
         switch (item.getItemId()) {
             case R.id.mnuSave:
-                SaveData();
+                if (GlobalVar.ValidateAutomacticDate(getApplicationContext()))
+                    SaveData();
+                else
+                    GlobalVar.RedirectSettings(DeliverySheetActivity.this);
                 return true;
             case R.id.mnuGetMyRouteShipments:
                 GetMyRouteShipments();
@@ -104,11 +107,11 @@ public class DeliverySheetActivity
                     thirdFragment.PieceBarCodeList.size(), secondFragment.WaybillList.size(),
                     firstFragment.txtTruckID.getText().toString());
 
-            if (dbConnections.InsertOnCloadingForD(onCloadingForD,getApplicationContext())) {
-                int OnCloadingForDID = dbConnections.getMaxID("OnCloadingForD",getApplicationContext());
+            if (dbConnections.InsertOnCloadingForD(onCloadingForD, getApplicationContext())) {
+                int OnCloadingForDID = dbConnections.getMaxID("OnCloadingForD", getApplicationContext());
                 for (int i = 0; i < secondFragment.WaybillList.size(); i++) {
                     OnCLoadingForDWaybill onCLoadingForDWaybill = new OnCLoadingForDWaybill(secondFragment.WaybillList.get(i), OnCloadingForDID);
-                    if (!dbConnections.InsertOnCLoadingForDWaybill(onCLoadingForDWaybill,getApplicationContext())) {
+                    if (!dbConnections.InsertOnCLoadingForDWaybill(onCLoadingForDWaybill, getApplicationContext())) {
                         GlobalVar.GV().ShowSnackbar(getWindow().getDecorView().getRootView(), getString(R.string.ErrorWhileSaving), GlobalVar.AlertType.Error);
                         IsSaved = false;
                         break;
@@ -117,7 +120,7 @@ public class DeliverySheetActivity
 
                 for (int i = 0; i < thirdFragment.PieceBarCodeList.size(); i++) {
                     OnCLoadingForDDetail onCLoadingForDDetail = new OnCLoadingForDDetail(thirdFragment.PieceBarCodeList.get(i), OnCloadingForDID);
-                    if (!dbConnections.InsertOnCLoadingForDDetail(onCLoadingForDDetail,getApplicationContext())) {
+                    if (!dbConnections.InsertOnCLoadingForDDetail(onCLoadingForDDetail, getApplicationContext())) {
                         GlobalVar.GV().ShowSnackbar(getWindow().getDecorView().getRootView(), getString(R.string.ErrorWhileSaving), GlobalVar.AlertType.Error);
                         IsSaved = false;
                         break;

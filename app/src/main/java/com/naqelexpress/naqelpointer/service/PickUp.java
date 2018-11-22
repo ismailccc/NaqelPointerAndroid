@@ -133,7 +133,7 @@ public class PickUp extends Service {
         try {
             DBConnections db = new DBConnections(getApplicationContext(), null);
 
-            Cursor result = db.Fill("select * from PickUp where IsSync = 0 Limit 1 ",getApplicationContext());
+            Cursor result = db.Fill("select * from PickUp where IsSync = 0 Limit 1 ", getApplicationContext());
 
 
             if (result.getCount() > 0) {
@@ -157,8 +157,8 @@ public class PickUp extends Service {
                     pickUpRequest.Longitude = result.getString(result.getColumnIndex("Longitude"));
                     pickUpRequest.CurrentVersion = result.getString(result.getColumnIndex("CurrentVersion"));
                     pickUpRequest.LoadTypeID = result.getInt(result.getColumnIndex("LoadTypeID"));
-
-                    Cursor resultDetail = db.Fill("select * from PickUpDetail where PickUpID = " + pickUpRequest.ID,getApplicationContext());
+                    pickUpRequest.al = result.getInt(result.getColumnIndex("AL"));
+                    Cursor resultDetail = db.Fill("select * from PickUpDetail where PickUpID = " + pickUpRequest.ID, getApplicationContext());
 
                     if (resultDetail.getCount() > 0) {
                         int index = 0;
@@ -206,8 +206,8 @@ public class PickUp extends Service {
                     boolean IsSync = Boolean.parseBoolean(response.getString("IsSync"));
                     boolean HasError = Boolean.parseBoolean(response.getString("HasError"));
                     if (IsSync && !HasError) {
-                        db.deletePickupID(id,getApplicationContext());
-                        db.deletePickupDetails(id,getApplicationContext());
+                        db.deletePickupID(id, getApplicationContext());
+                        db.deletePickupDetails(id, getApplicationContext());
                         flag_thread = false;
 
 

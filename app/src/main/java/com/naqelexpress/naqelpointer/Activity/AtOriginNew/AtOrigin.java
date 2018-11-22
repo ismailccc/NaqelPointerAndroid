@@ -70,8 +70,9 @@ public class AtOrigin extends AppCompatActivity {
 //                    temp.clear();
 //                    Waybill.adapter.updateData();
                     CourierDetails.adapter.notifyDataSetChanged();
-                } else if (i == 1){}
-                    //OpenPallet.adapter.notifyDataSetChanged();
+                } else if (i == 1) {
+                }
+                //OpenPallet.adapter.notifyDataSetChanged();
 
             }
 
@@ -87,8 +88,8 @@ public class AtOrigin extends AppCompatActivity {
         CourierDetails.waybillBardetails.clear();
         FirstFragment.Selectedwaybilldetails.clear();
         SecondFragment.SelectedwaybillBardetails.clear();
-        SecondFragment.ValidateBarCodeList.clear();;
-
+        SecondFragment.ValidateBarCodeList.clear();
+        ;
 
 
     }
@@ -106,7 +107,10 @@ public class AtOrigin extends AppCompatActivity {
         // Handle item selection
         switch (item.getItemId()) {
             case R.id.mnuSave:
-                SaveData();
+                if (GlobalVar.ValidateAutomacticDate(getApplicationContext()))
+                    SaveData();
+                else
+                    GlobalVar.RedirectSettings(AtOrigin.this);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);

@@ -236,8 +236,8 @@ public class GlobalVar {
         snackbar.show();
     }
 
-    public void ShowDialog(Context context, String title, String Message, boolean Cancelable) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+    public void ShowDialog(Activity activity, String title, String Message, boolean Cancelable) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(activity);
         builder.setCancelable(Cancelable);
         builder.setTitle(title);
         builder.setMessage(Message);
@@ -1665,25 +1665,25 @@ public class GlobalVar {
         return true;
     }
 
-    public static boolean AskPermission_Location(Activity activity) {
+    public static boolean AskPermission_Location(Activity activity, int req) {
         String[] PERMISSIONS = {
                 Manifest.permission.ACCESS_COARSE_LOCATION,
                 Manifest.permission.ACCESS_FINE_LOCATION
         };
         if (!hasPermissions(activity, PERMISSIONS)) {
-            ActivityCompat.requestPermissions(activity, PERMISSIONS, 1);
+            ActivityCompat.requestPermissions(activity, PERMISSIONS, req);
             return false;
         }
         return true;
     }
 
-    public static boolean AskPermission_Contcatcs(Activity activity) {
+    public static boolean AskPermission_Contcatcs(Activity activity, int req) {
         String[] PERMISSIONS = {
                 Manifest.permission.READ_CONTACTS,
                 Manifest.permission.WRITE_CONTACTS
         };
         if (!hasPermissions(activity, PERMISSIONS)) {
-            ActivityCompat.requestPermissions(activity, PERMISSIONS, 111);
+            ActivityCompat.requestPermissions(activity, PERMISSIONS, req);
             return false;
         }
         return true;
@@ -1767,9 +1767,33 @@ public class GlobalVar {
         alertDialog.show();
     }
 
+
     public static void hideKeyboardFrom(Context context, View view) {
         InputMethodManager imm = (InputMethodManager) context.getSystemService(Activity.INPUT_METHOD_SERVICE);
         imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+    }
+
+    public static boolean ValidateAutomacticDate(Context context) {
+        int valid = android.provider.Settings.System.getInt(context.getContentResolver(), android.provider.Settings.System.AUTO_TIME, 0); // 1 means Enabled
+        if (valid == 1)
+            return true;
+        else
+            return false;
+
+    }
+
+    public static void RedirectSettings(final Activity activity) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+        builder.setTitle("Info")
+                .setMessage("Kindly Enable Automatic Network Provider Date/Time")
+                .setPositiveButton("YES", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int which) {
+                        activity.startActivityForResult(new Intent(android.provider.Settings.ACTION_DATE_SETTINGS), 0);
+                    }
+                }).setNegativeButton("Cancel", null).setCancelable(false);
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
     }
 }
 

@@ -22,9 +22,6 @@ import com.naqelexpress.naqelpointer.R;
 
 import org.joda.time.DateTime;
 
-import java.text.NumberFormat;
-import java.util.Locale;
-
 public class SplashScreenActivity
         extends AppCompatActivity {
     @Override
@@ -34,16 +31,28 @@ public class SplashScreenActivity
         setContentView(R.layout.splashscreen);
 
         //String token = FirebaseInstanceId.getInstance().getToken();
+
+//        Date c = Calendar.getInstance().getTime();
+//        System.out.println("Current time => " + c);
+//
+//        SimpleDateFormat df = new SimpleDateFormat("dd-MM-yyyy");
+//        String formattedDate = df.format(c);
+
+//        System.out.println(formattedDate);
+
+
         try {
 
             System.out.println("");
         } catch (Exception e) {
             System.out.println(e);
         }
-        DBConnections dbConnections = new DBConnections(getApplicationContext(), null);
+//        DBConnections dbConnections = new DBConnections(getApplicationContext(), null);
+        //dbConnections.deleteMyRouteShipments();
         //dbConnections.deleteAllMeasurement();
 //        dbConnections.deleteAllOrigin();
-        dbConnections.deleteAllTrip();
+        //dbConnections.deleteAllTrip();
+//        dbConnections.close();
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         ImageView imageView = (ImageView) findViewById(R.id.imageView);
 
@@ -78,6 +87,7 @@ public class SplashScreenActivity
 
         DBConnections dbConnections = new DBConnections(getApplicationContext(), null);
         if (dbConnections.isColumnExist("UserMeLogin", "LogedOut", getApplicationContext())) {
+            Cursor result1 = dbConnections.Fill("select * from UserMeLogin", getApplicationContext());
             Cursor result = dbConnections.Fill("select * from UserMeLogin where LogedOut is NULL or LogedOut = 0", getApplicationContext());
             if (result.getCount() > 1) {
                 result.moveToFirst();

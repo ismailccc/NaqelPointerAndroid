@@ -292,7 +292,7 @@ public class LoginActivity
     private void OpenMainPage(int getMaster) {
         this.getMaster = getMaster;
         if (GlobalVar.GV().ThereIsMandtoryVersion)
-            GlobalVar.GV().ShowDialog(getApplicationContext(), "New Version", "There is a new version, Please update the system, or cordiante with IT department for updating your system.", true);
+            GlobalVar.GV().ShowDialog(LoginActivity.this, "New Version", "There is a new version, Please update the system, or cordiante with IT department for updating your system.", true);
         else {
             //  SetDeviceId();
 
@@ -360,7 +360,7 @@ public class LoginActivity
                             DBConnections dbConnections = new DBConnections(getApplicationContext(), null);
                             if (EmployID >= -1 && UserID > 0) {
                                 if (GlobalVar.GV().ThereIsMandtoryVersion) {
-                                    GlobalVar.GV().ShowDialog(getApplicationContext(), "New Version", "There is a new version, Please update the system, or cordiante with IT department for updating your system.", false);
+                                    GlobalVar.GV().ShowDialog(LoginActivity.this, "New Version", "There is a new version, Please update the system, or cordiante with IT department for updating your system.", false);
                                     return;
                                 }
 
@@ -558,7 +558,7 @@ public class LoginActivity
                 CheckNewVersionResult checkNewVersionResult = new CheckNewVersionResult(finalJson);
 
                 if (checkNewVersionResult.HasNewVersion)
-                    GlobalVar.GV().ShowDialog(getApplicationContext(), "New Version", "There is a new version, Please update the system, or cordiante with IT department for updating your system.", true);
+                    GlobalVar.GV().ShowDialog(LoginActivity.this, "New Version", "There is a new version, Please update the system, or cordiante with IT department for updating your system.", true);
 
                 if (checkNewVersionResult.IsMandatory)
                     GlobalVar.GV().ThereIsMandtoryVersion = true;

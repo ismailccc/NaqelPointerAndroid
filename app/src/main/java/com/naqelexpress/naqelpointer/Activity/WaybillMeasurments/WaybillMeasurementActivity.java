@@ -325,7 +325,10 @@ public class WaybillMeasurementActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.mnuSave:
-                SaveData();
+                if (GlobalVar.ValidateAutomacticDate(getApplicationContext()))
+                    SaveData();
+                else
+                    GlobalVar.RedirectSettings(WaybillMeasurementActivity.this);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);

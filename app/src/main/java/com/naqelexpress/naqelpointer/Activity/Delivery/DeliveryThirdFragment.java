@@ -41,7 +41,7 @@ public class DeliveryThirdFragment extends Fragment {
     View rootView;
     private EditText txtBarCode, txtBarCodePiece;
     TextView lbTotal;
-    public ArrayList<String> ShipmentBarCodeList = new ArrayList<>();
+    //    public static  ArrayList<String> ShipmentBarCodeList = new ArrayList<>();
     public ArrayList<String> DeliveryBarCodeList = new ArrayList<>();
     private DataAdapter adapter;
     private RecyclerView recyclerView;
@@ -212,7 +212,7 @@ public class DeliveryThirdFragment extends Fragment {
 
     private void AddNewPiece() {
         if (!DeliveryBarCodeList.contains(txtBarCode.getText().toString())) {
-            if (ShipmentBarCodeList.contains(txtBarCode.getText().toString())) {
+            if (DeliveryFirstFragment.ShipmentBarCodeList.contains(txtBarCode.getText().toString())) {
                 DeliveryBarCodeList.add(0, txtBarCode.getText().toString());
                 lbTotal.setText(getString(R.string.lbCount) + DeliveryBarCodeList.size());
                 GlobalVar.GV().MakeSound(this.getContext(), R.raw.barcodescanned);
@@ -277,7 +277,7 @@ public class DeliveryThirdFragment extends Fragment {
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putStringArrayList("DeliveryBarCodeList", DeliveryBarCodeList);
-        outState.putStringArrayList("ShipmentBarCodeList", ShipmentBarCodeList);
+//        outState.putStringArrayList("ShipmentBarCodeList", DeliveryFirstFragment.ShipmentBarCodeList);
         outState.putString("lbTotal", lbTotal.getText().toString());
     }
 
@@ -286,7 +286,7 @@ public class DeliveryThirdFragment extends Fragment {
         super.onActivityCreated(savedInstanceState);
         if (savedInstanceState != null) {
             DeliveryBarCodeList = savedInstanceState.getStringArrayList("DeliveryBarCodeList");
-            ShipmentBarCodeList = savedInstanceState.getStringArrayList("ShipmentBarCodeList");
+//            DeliveryFirstFragment.ShipmentBarCodeList = savedInstanceState.getStringArrayList("ShipmentBarCodeList");
             lbTotal.setText(savedInstanceState.getString("lbTotal"));
             initViews();
             //  initDialog();
