@@ -4,8 +4,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class GetUserMEDataResult
-    extends DefaultResult
-{
+        extends DefaultResult {
     public int ID;
     public int EmployID;
     public String Password;
@@ -19,12 +18,11 @@ public class GetUserMEDataResult
     public String StationCode;
     public String StationName;
     public String StationFName;
+    public String Division;
 
-    public GetUserMEDataResult(String finalJson)
-    {
+    public GetUserMEDataResult(String finalJson) {
         JSONObject jsonObject;
-        try
-        {
+        try {
             jsonObject = new JSONObject(finalJson);
             ID = Integer.parseInt(jsonObject.getString("ID"));
             EmployID = Integer.parseInt(jsonObject.getString("EmployID"));
@@ -39,12 +37,11 @@ public class GetUserMEDataResult
             StationCode = jsonObject.getString("StationCode");
             StationName = jsonObject.getString("StationName");
             StationFName = jsonObject.getString("StationFName");
+            Division = jsonObject.getString("Division");
 
             HasError = Boolean.parseBoolean(jsonObject.getString("HasError"));
             ErrorMessage = jsonObject.getString("ErrorMessage");
-        }
-        catch (JSONException e)
-        {
+        } catch (JSONException e) {
             e.printStackTrace();
         }
     }

@@ -61,6 +61,7 @@ public class PickUpFirstFragment
     PickupAdapter adapter;
     public static ArrayList<HashMap<String, String>> clientdetails;
     static int al = 0;
+    String division = "";
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -166,6 +167,17 @@ public class PickUpFirstFragment
             SetText();
         }
 
+        DBConnections dbConnections = new DBConnections(getContext(), null);
+        Cursor result = dbConnections.Fill("select * from UserME where StatusID <> 3 and EmployID = " +
+                GlobalVar.GV().EmployID, getContext());
+        if (result.getCount() > 0) {
+            result.moveToFirst();
+            division = result.getString(result.getColumnIndex("Division"));
+        }
+        if (division.equals("Express")) {
+            txtOrigin.setFocusable(false);
+        }
+
         Button btnOpenCamera = (Button) rootView.findViewById(R.id.btnOpenCamera);
         btnOpenCamera.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -199,7 +211,10 @@ public class PickUpFirstFragment
             @Override
             public void onClick(View v) {
                 txtClientID.setText("0");
-                clientdetails.clear();
+                HashMap<String, String> temp = new HashMap<>();
+                temp.put("LoadTypeID", "1");
+                temp.put("Name", "Express");
+                clientdetails.add(temp);
                 adapter.notifyDataSetChanged();
             }
         });
@@ -385,8 +400,10 @@ public class PickUpFirstFragment
                         flag_thread = false;
                         progressDialog.dismiss();
 
-                    } else
+                    } else {
+
                         flag_thread = false;
+                    }
                     progressDialog.dismiss();
                 } catch (JSONException e) {
                     flag_thread = false;

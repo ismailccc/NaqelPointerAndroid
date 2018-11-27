@@ -27,7 +27,7 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.VolleyLog;
 import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.Volley;
+import com.naqelexpress.naqelpointer.ApplicationController;
 import com.naqelexpress.naqelpointer.Classes.JsonSerializerDeserializer;
 import com.naqelexpress.naqelpointer.DB.DBConnections;
 import com.naqelexpress.naqelpointer.GlobalVar;
@@ -179,7 +179,8 @@ public class CallRecord extends Service {
     public void SaveCheckPoint(final DBConnections db, final String input, final int id) {
 
 
-        RequestQueue requestQueue = Volley.newRequestQueue(this);
+//        RequestQueue requestQueue = Volley.newRequestQueue(this);
+        RequestQueue requestQueue = ApplicationController.getInstance().getmRequestQueue();
         String URL = GlobalVar.GV().NaqelPointerAPILink + "SendCCallRecording";
 
 

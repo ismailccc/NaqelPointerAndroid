@@ -699,6 +699,7 @@ public class LoginActivity
                     instance.StationCode = getUserMEDataResult.StationCode;
                     instance.StationName = getUserMEDataResult.StationName;
                     instance.StationFName = getUserMEDataResult.StationFName;
+                    instance.Division = getUserMEDataResult.Division;
 
 
                     GlobalVar.GV().UserID = instance.ID;

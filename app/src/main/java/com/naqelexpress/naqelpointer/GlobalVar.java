@@ -10,6 +10,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
@@ -585,6 +586,11 @@ public class GlobalVar {
                             JSONArray noNeedVolume = jsonObject.getJSONArray("NoNeedVolume");
                             if (noNeedVolume.length() > 0)
                                 new NoNeedVolumeReason(noNeedVolume.toString(), view, context);
+
+                            SharedPreferences sharedpreferences = context.getSharedPreferences("naqelSettings", Context.MODE_PRIVATE);
+                            SharedPreferences.Editor editor = sharedpreferences.edit();
+                            editor.putString("division", jsonObject.getString("Division"));
+                            editor.commit();
                         }
                     } else
                         updateApp(activity);
@@ -604,7 +610,7 @@ public class GlobalVar {
         task.execute();
     }
 
-    public int VersionCode(Context context) {
+    public static int VersionCode(Context context) {
         int versioncode = 0;
 
         try {
@@ -617,7 +623,7 @@ public class GlobalVar {
         return versioncode;
     }
 
-    private void updateApp(final Activity activity) {
+    public static void updateApp(final Activity activity) {
         AlertDialog.Builder builder = new AlertDialog.Builder(activity);
         builder.setTitle("Info")
                 .setMessage("Kindly Please update our lastest version")
@@ -1093,7 +1099,7 @@ public class GlobalVar {
                     myRouteShipments.ItemNo = result.getString(result.getColumnIndex("ItemNo"));
 
                     myRouteShipments.TypeID = Integer.parseInt(result.getString(result.getColumnIndex("TypeID")));
-                    myRouteShipments.CODAmount = Double.parseDouble(result.getString(result.getColumnIndex("CODAmount")));
+                    myRouteShipments.CODAmount = getDoubleFromString(result.getString(result.getColumnIndex("CODAmount")));
                     myRouteShipments.DeliverySheetID = Integer.parseInt(result.getString(result.getColumnIndex("DeliverySheetID")));
                     myRouteShipments.Date = DateTime.parse(result.getString(result.getColumnIndex("Date")));
                     myRouteShipments.ExpectedTime = DateTime.parse(result.getString(result.getColumnIndex("ExpectedTime")));

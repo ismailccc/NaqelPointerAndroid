@@ -33,6 +33,7 @@ import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
+import android.widget.TableLayout;
 import android.widget.TextView;
 
 import com.naqelexpress.naqelpointer.Activity.ArrivedDest.ArrivedatDestination;
@@ -56,19 +57,38 @@ import com.naqelexpress.naqelpointer.Activity.Settings.SettingActivity;
 import com.naqelexpress.naqelpointer.Activity.ValidationDS.ValidationDS;
 import com.naqelexpress.naqelpointer.Activity.WaybillMeasurments.WaybillMeasurementActivity;
 import com.naqelexpress.naqelpointer.BuildConfig;
+import com.naqelexpress.naqelpointer.Classes.JsonSerializerDeserializer;
 import com.naqelexpress.naqelpointer.ContactNo.Contact;
 import com.naqelexpress.naqelpointer.DB.DBConnections;
+import com.naqelexpress.naqelpointer.DB.DBObjects.CheckPointType;
+import com.naqelexpress.naqelpointer.DB.DBObjects.CheckPointTypeDDetail;
+import com.naqelexpress.naqelpointer.DB.DBObjects.CheckPointTypeDetail;
+import com.naqelexpress.naqelpointer.DB.DBObjects.DeliveryStatus;
+import com.naqelexpress.naqelpointer.DB.DBObjects.NoNeedVolumeReason;
+import com.naqelexpress.naqelpointer.DB.DBObjects.Station;
 import com.naqelexpress.naqelpointer.DB.DBObjects.UserMeLogin;
 import com.naqelexpress.naqelpointer.DB.DBObjects.UserSettings;
 import com.naqelexpress.naqelpointer.GlobalVar;
 import com.naqelexpress.naqelpointer.JSON.DataSync;
+import com.naqelexpress.naqelpointer.JSON.Request.GetDeliveryStatusRequest;
 import com.naqelexpress.naqelpointer.R;
 import com.naqelexpress.naqelpointer.service.LocationService;
 
 import org.joda.time.DateTime;
 import org.joda.time.DurationFieldType;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class MainPageActivity
@@ -77,36 +97,41 @@ public class MainPageActivity
     protected List<AsyncTask<String, Integer, String>> asyncTasks = new ArrayList<AsyncTask<String, Integer, String>>();
 
     String[] cellTitle;
-    int cellIcon[] = {
+    int cellIcon[];
 
-            R.drawable.deliverysheet,
-            R.drawable.maplist,
-            R.drawable.delivery,
-            R.drawable.delivery,
-            R.drawable.notdelivered,
-            R.drawable.pickup,
-            R.drawable.waybillmeasurement,
-            R.drawable.settings,
-            // R.drawable.datasync,
-            R.drawable.money,
-            R.drawable.pendingcod,
-            R.drawable.customclearence,
-            R.drawable.checkpoint,
-            R.drawable.checkpoint,
-            R.drawable.pendingdata,
-            R.drawable.ld,
-            R.drawable.importtruck,
-            R.drawable.contacts,
-            R.drawable.closetrip,
-            R.drawable.maplist
-
-    };
+    //    int cellIcon[] = {
+//
+//            R.drawable.deliverysheet, //CBU
+//            R.drawable.maplist,//CBU
+//            R.drawable.delivery,//CBU
+//            R.drawable.delivery,
+//            R.drawable.notdelivered,//CBU
+//            R.drawable.pickup,//CBU
+//            R.drawable.waybillmeasurement,
+//            R.drawable.settings,//CBU
+//            // R.drawable.datasync,
+//            R.drawable.money,//CBU
+//            R.drawable.pendingcod,//CBU
+//            R.drawable.customclearence,
+//            R.drawable.checkpoint,
+//            R.drawable.checkpoint,
+//            R.drawable.pendingdata,
+//            R.drawable.ld,
+//            R.drawable.importtruck,
+//            R.drawable.contacts,
+//            R.drawable.closetrip,
+//            R.drawable.maplist
+//
+//    };
     GridView gridView;
 
+    String devision = "";
     FloatingActionButton btnSignOut;
     public DataSync dataSync;
     int progressBarStatus = 0;
     TextView ofd, attempted, delivered, exceptions, productivity, complaint, compDelvrd, ComRemain;
+
+    TableLayout tl, tl1;
 
     //TextView out
     @Override
@@ -120,12 +145,20 @@ public class MainPageActivity
             setContentView(R.layout.mainpage);
 
 
+            tl = (TableLayout) findViewById(R.id.tl);
+            tl1 = (TableLayout) findViewById(R.id.tl1);
+
+//            int screenSize = getResources().getConfiguration().screenLayout &
+//                    Configuration.SCREENLAYOUT_SIZE_MASK;
+
+            float screenSize = getResources().getDisplayMetrics().density;
             android.support.v7.app.ActionBar mActionBar = getSupportActionBar();
             mActionBar.setDisplayShowHomeEnabled(false);
             mActionBar.setDisplayShowTitleEnabled(false);
             LayoutInflater mInflater = LayoutInflater.from(this);
-            android.support.v7.app.ActionBar.LayoutParams layoutParams = new android.support.v7.app.ActionBar.LayoutParams(100,
-                    100, Gravity.RIGHT);
+            //int size = (int) (50 * screenSize);
+            android.support.v7.app.ActionBar.LayoutParams layoutParams = new android.support.v7.app.ActionBar.LayoutParams((int) (50 * screenSize),
+                    (int) (50 * screenSize), Gravity.RIGHT);
 
             View mCustomView = mInflater.inflate(R.layout.circle, null);
             mActionBar.setCustomView(mCustomView, layoutParams);
@@ -161,30 +194,6 @@ public class MainPageActivity
 
         //GlobalVar.GV().sendSMS("+966580679791","text",getApplicationContext());
 
-        cellTitle = new String[19];
-        cellTitle[0] = getResources().getString(R.string.DeliverySheetActivity);
-        cellTitle[1] = getResources().getString(R.string.MyRouteActivity);
-        cellTitle[2] = getResources().getString(R.string.DeliveryActivity);
-        cellTitle[3] = getResources().getString(R.string.MultiDeliveryActivity);
-        cellTitle[4] = getResources().getString(R.string.NotDeliveredActivity);
-        cellTitle[5] = getResources().getString(R.string.PickUpActivity);
-        cellTitle[6] = getResources().getString(R.string.WaybillMeasurementActivity);
-        cellTitle[7] = getResources().getString(R.string.SettingsActivity);
-        //cellTitle[8] = getResources().getString(R.string.DataSync);
-        cellTitle[8] = getResources().getString(R.string.CODChecking);
-        cellTitle[9] = getResources().getString(R.string.PendingCOD);
-        cellTitle[10] = getResources().getString(R.string.CustomsClearance);
-        cellTitle[11] = getResources().getString(R.string.BookingList);
-        cellTitle[12] = getResources().getString(R.string.AtOrigin);
-        cellTitle[13] = "Hisory";
-        cellTitle[14] = getResources().getString(R.string.ld);
-        cellTitle[15] = "Arrived Dest";
-        cellTitle[16] = "Contacts";
-        cellTitle[17] = "Validate DS";
-        cellTitle[18] = "MyRoute EBU";
-
-        MainPageNavigation();
-
 
         final DBConnections dbConnections = new DBConnections(getApplicationContext(), null);
 
@@ -212,28 +221,178 @@ public class MainPageActivity
             }
         });
 
-        dbConnections.close();
 
         LoadUserSettings();
 
-        if (getIntent().getIntExtra("getMaster", 0) == 1)
-            GetMasterData();
 
-//        Thread loadMasterDataThread = new Thread() {
-//            @Override
-//            public void run() {
-//
-//
-//                // progressDialog.dismiss();
-//
-//                // if (GlobalVar.GV().myBookingList.size() <= 0)
-//                //     GlobalVar.GV().LoadMyBookingList("BookingDate", true);
-//            }
-//        };
-////
-//        loadMasterDataThread.start();
+        if (getIntent().getIntExtra("getMaster", 0) == 1) {
+            //   GetMasterData();
+            GetMasterData asynthread = new GetMasterData();
+            StartAsyncTaskInParallel(asynthread);
 
 
+        } else {
+            Cursor result = dbConnections.Fill("select * from UserME where StatusID <> 3 and EmployID = " +
+                    GlobalVar.GV().EmployID, getApplicationContext());
+            if (result.getCount() > 0) {
+                result.moveToFirst();
+                devision = result.getString(result.getColumnIndex("Division"));
+                if (devision.equals("0")) {
+                    GetMasterData asynthread = new GetMasterData();
+                    StartAsyncTaskInParallel(asynthread);
+
+                }
+            }
+        }
+        dbConnections.close();
+        LoadMenu();
+
+
+    }
+
+    HashMap<Integer, Integer> itemposition = new HashMap<>();
+
+    private void LoadMenu() {
+        if (devision.equals("Courier")) {
+            cellTitle = new String[11];
+            cellIcon = new int[11];
+        } else if (devision.equals("IRS")) {
+            cellTitle = new String[1];
+            cellIcon = new int[1];
+        } else if (devision.equals("Express")) {
+            cellTitle = new String[17];
+            cellIcon = new int[17];
+        }
+
+        if (devision.equals("Courier")) {
+            cellTitle[0] = getResources().getString(R.string.DeliverySheetActivity);//CBU
+            cellTitle[1] = getResources().getString(R.string.MyRouteActivity);//CBU
+            cellTitle[2] = getResources().getString(R.string.DeliveryActivity);//CBU
+
+
+            cellTitle[3] = getResources().getString(R.string.NotDeliveredActivity);//CBU 4
+            cellTitle[4] = getResources().getString(R.string.PickUpActivity);//CBU 5
+            cellTitle[5] = getResources().getString(R.string.WaybillMeasurementActivity); //6
+            cellTitle[6] = getResources().getString(R.string.SettingsActivity);//CBU 7
+            //cellTitle[8] = getResources().getString(R.string.DataSync);
+            cellTitle[7] = getResources().getString(R.string.CODChecking);//CBU 8
+            cellTitle[8] = getResources().getString(R.string.PendingCOD);//CBU 9
+            cellTitle[9] = "Validate DS";//17
+            cellTitle[10] = "Hisory";//13
+
+
+            itemposition.put(0, 0);
+            itemposition.put(1, 18); // 1 is old screen
+            itemposition.put(2, 2);
+            itemposition.put(3, 4);
+            itemposition.put(4, 5);
+            itemposition.put(5, 6);
+            itemposition.put(6, 7);
+            itemposition.put(7, 8);
+            itemposition.put(8, 9);
+            itemposition.put(9, 17);
+            itemposition.put(10, 13);
+
+        }
+
+
+        if (devision.equals("Express")) {
+            cellTitle[0] = getResources().getString(R.string.DeliverySheetActivity);//CBU
+            cellTitle[1] = getResources().getString(R.string.MyRouteActivity);//CBU
+            cellTitle[2] = getResources().getString(R.string.DeliveryActivity);//CBU
+            cellTitle[3] = getResources().getString(R.string.MultiDeliveryActivity);
+            cellTitle[4] = getResources().getString(R.string.NotDeliveredActivity);//CBU 4
+            cellTitle[5] = getResources().getString(R.string.PickUpActivity);//CBU 5
+            cellTitle[6] = getResources().getString(R.string.WaybillMeasurementActivity); //6
+            cellTitle[7] = getResources().getString(R.string.SettingsActivity);//CBU 7
+            //cellTitle[8] = getResources().getString(R.string.DataSync);
+            cellTitle[8] = getResources().getString(R.string.CODChecking);//CBU 8
+            cellTitle[9] = getResources().getString(R.string.PendingCOD);//CBU 9
+            cellTitle[10] = getResources().getString(R.string.BookingList);//11
+            cellTitle[11] = getResources().getString(R.string.AtOrigin);//12
+
+            cellTitle[12] = getResources().getString(R.string.ld);//14
+            cellTitle[13] = "Arrived Dest";//15
+            cellTitle[14] = "Contacts";//16
+            cellTitle[15] = "Validate DS";//17
+           // cellTitle[16] = "MyRoute EBU";//18
+            cellTitle[16] = "Hisory";//13
+
+            itemposition.put(0, 0);
+            itemposition.put(1, 18);
+            itemposition.put(2, 2);
+            itemposition.put(3, 3);
+            itemposition.put(4, 4);
+            itemposition.put(5, 5);
+            itemposition.put(6, 6);
+            itemposition.put(7, 7);
+            itemposition.put(8, 8);
+            itemposition.put(9, 9);
+            itemposition.put(10, 11);
+            itemposition.put(11, 12);
+            itemposition.put(12, 14);
+            itemposition.put(13, 15);
+            itemposition.put(14, 16);
+            itemposition.put(15, 17);
+            //itemposition.put(16, 18);
+            itemposition.put(16, 13);
+
+        }
+        if (devision.equals("IRS")) {
+            cellTitle[0] = getResources().getString(R.string.CustomsClearance);
+
+            itemposition.put(0, 10);
+
+        }
+
+        if (devision.equals("Courier") || devision.equals("Express")) {
+            cellIcon[0] = R.drawable.deliverysheet; //CBU
+            cellIcon[1] = R.drawable.maplist; //CBU
+            cellIcon[2] = R.drawable.delivery; //CBU
+
+            cellIcon[3] = R.drawable.notdelivered; //CBU
+            cellIcon[4] = R.drawable.pickup; //CBU
+            cellIcon[5] = R.drawable.waybillmeasurement; //CBU
+            cellIcon[6] = R.drawable.settings; //CBU
+            cellIcon[7] = R.drawable.money; //CBU
+            cellIcon[8] = R.drawable.pendingcod; //CBU
+            cellIcon[9] = R.drawable.closetrip; //CBU
+            cellIcon[10] = R.drawable.pendingdata; //CBU
+        }
+        if (devision.equals("Express")) {
+
+            cellIcon[0] = R.drawable.deliverysheet; //CBU
+            cellIcon[1] = R.drawable.maplist; //CBU
+            cellIcon[2] = R.drawable.delivery; //CBU
+            cellIcon[3] = R.drawable.delivery; //CBU
+            cellIcon[4] = R.drawable.notdelivered; //CBU
+            cellIcon[5] = R.drawable.pickup; //CBU
+            cellIcon[6] = R.drawable.waybillmeasurement; //CBU
+            cellIcon[7] = R.drawable.settings; //CBU
+            cellIcon[8] = R.drawable.money; //CBU
+            cellIcon[9] = R.drawable.pendingcod; //CBU
+
+            cellIcon[10] = R.drawable.checkpoint; //CBU
+            cellIcon[11] = R.drawable.checkpoint; //CBU
+            cellIcon[12] = R.drawable.ld; //CBU
+            cellIcon[13] = R.drawable.importtruck; //CBU
+            cellIcon[14] = R.drawable.contacts; //CBU
+            cellIcon[15] = R.drawable.closetrip; //CBU
+            //cellIcon[16] = R.drawable.maplist; //CBU
+            cellIcon[16] = R.drawable.pendingdata; //CBU
+        }
+        if (devision.equals("IRS"))
+            cellIcon[0] = R.drawable.customclearence; //CBU
+        if (devision.length() > 0 && !devision.equals("0"))
+            MainPageNavigation();
+
+        if (devision.equals("Express") || devision.equals("IRS")) {
+            tl.setVisibility(View.GONE);
+            tl1.setVisibility(View.GONE);
+        } else if (devision.equals("Courier")) {
+            tl.setVisibility(View.VISIBLE);
+            tl1.setVisibility(View.VISIBLE);
+        }
     }
 
     private void GetMasterData() {
@@ -495,6 +654,7 @@ public class MainPageActivity
         gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                position = itemposition.get(position);
                 switch (position) {
                     case 0:
                         if (GlobalVar.AskPermission_Camera(MainPageActivity.this, 6)) {
@@ -907,8 +1067,11 @@ public class MainPageActivity
     ProgressDialog progressDialog;
 
     private class GetMasterData extends AsyncTask<String, Integer, String> {
+        StringBuffer buffer;
+
         @Override
         protected void onPreExecute() {
+
             if (progressDialog == null)
                 progressDialog = ProgressDialog.show(MainPageActivity.this, "Please wait.", "Bringing Master Details.", true);
             super.onPreExecute();
@@ -921,57 +1084,152 @@ public class MainPageActivity
 
             //uploadfilescount = uploadfilescount + 1;
 
-            GlobalVar.GV().GetMasterData(MainPageActivity.this, getWindow().getDecorView().getRootView(), progressDialog);
+            // GlobalVar.GV().GetMasterData(MainPageActivity.this, getWindow().getDecorView().getRootView(), progressDialog);
+            GetDeliveryStatusRequest getDeliveryStatusRequest = new GetDeliveryStatusRequest();
+            String jsonData = JsonSerializerDeserializer.serialize(getDeliveryStatusRequest, true);
 
-//            if (GlobalVar.GV().StationList.size() <= 0)
-//                GlobalVar.GV().GetStationList(true, getApplicationContext(), getWindow().getDecorView().getRootView());
-//
-//            if (GlobalVar.GV().DeliveryStatusList.size() <= 0)
-//                GlobalVar.GV().GetDeliveryStatusList(true, getApplicationContext(), getWindow().getDecorView().getRootView());
-//
-//            if (GlobalVar.GV().CheckPointTypeList.size() <= 0)
-//                GlobalVar.GV().GetCheckPointTypeList(true, getApplicationContext(), getWindow().getDecorView().getRootView());
-//
-//            if (GlobalVar.GV().CheckPointTypeDetailList.size() <= 0)
-//                GlobalVar.GV().GetCheckPointTypeDetailList(true, 0, getApplicationContext(), getWindow().getDecorView().getRootView());
-//
-//            if (GlobalVar.GV().CheckPointTypeDDetailList.size() <= 0)
-//                GlobalVar.GV().GetCheckPointTypeDDetailList(true, 0, getApplicationContext(), getWindow().getDecorView().getRootView());
-//
-//            if (GlobalVar.GV().NoNeedVolumeReasonList.size() <= 0)
-            //              GlobalVar.GV().GetNoNeedVolumeReasonList(true, getApplicationContext(), getWindow().getDecorView().getRootView());
-//
-//
-//
-//            boolean loop = false;
-//            while (!loop) {
-//                if (GlobalVar.gs && GlobalVar.dsl && GlobalVar.cptl && GlobalVar.cptdl && GlobalVar.cptddl && GlobalVar.nnvdl) {
-//                    if (progressDialog != null)
-//                        progressDialog.dismiss();
-//
-//                    break;
-//                }
-//                try {
-//                    Thread.sleep(100);
-//                } catch (InterruptedException e) {
-//                    e.printStackTrace();
-//                }
-//            }
-//
+            HttpURLConnection httpURLConnection = null;
+            OutputStream dos = null;
+            InputStream ist = null;
 
+            try {
+                URL url = new URL(GlobalVar.GV().NaqelPointerAPILink + "GetMasterData");
+                httpURLConnection = (HttpURLConnection) url.openConnection();
+
+                httpURLConnection.setRequestMethod("POST");
+                httpURLConnection.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+                httpURLConnection.setDoInput(true);
+                httpURLConnection.setDoOutput(true);
+                httpURLConnection.connect();
+
+                dos = httpURLConnection.getOutputStream();
+                httpURLConnection.getOutputStream();
+                dos.write(jsonData.getBytes());
+
+                ist = httpURLConnection.getInputStream();
+                String line;
+                BufferedReader reader = new BufferedReader(new InputStreamReader(ist));
+                buffer = new StringBuffer();
+
+                while ((line = reader.readLine()) != null) {
+                    buffer.append(line);
+                }
+                return String.valueOf(buffer);
+            } catch (Exception ignored) {
+            } finally {
+                try {
+                    if (ist != null)
+                        ist.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                try {
+                    if (dos != null)
+                        dos.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                if (httpURLConnection != null)
+                    httpURLConnection.disconnect();
+                // result = String.valueOf(buffer);
+            }
             return null;
+//
+
 
         }
 
         @Override
         protected void onPostExecute(String result) {
-
-//            checkthreadalive();
-
             super.onPostExecute("");
+            if (result != null) {
+
+                try {
+                    Context context = getApplicationContext();
+                    JSONObject jsonObject = new JSONObject(result);
+                    JSONArray appversion = jsonObject.getJSONArray("AppVersion");
+                    View view = getWindow().getDecorView().getRootView();
+                    JSONObject jo = appversion.getJSONObject(0);
+                    DBConnections dbConnections = new DBConnections(context, null);
+                    dbConnections.InsertAppVersion(jo.getInt("VersionCode"), context);
+                    int versioncode = GlobalVar.VersionCode(context);
+                    if (jo.getInt("VersionCode") == versioncode) {
+                        if (jo.getInt("ChangesMainMenu") == 1) {
+                            JSONArray station = jsonObject.getJSONArray("Station");
+                            if (station.length() > 0)
+                                new Station(station.toString(), view, context);
+
+                            JSONArray deliveryStatus = jsonObject.getJSONArray("DeliveyStatus");
+                            if (deliveryStatus.length() > 0)
+                                new DeliveryStatus(deliveryStatus.toString(), view, context);
+
+                            JSONArray checkPointType = jsonObject.getJSONArray("CheckPointType");
+                            if (checkPointType.length() > 0)
+                                new CheckPointType(checkPointType.toString(), view, context);
+
+                            JSONArray checkPointdetail = jsonObject.getJSONArray("CheckPointTypeDetail");
+                            if (checkPointdetail.length() > 0)
+                                new CheckPointTypeDetail(checkPointdetail.toString(), view, context);
+
+                            JSONArray typeDDetails = jsonObject.getJSONArray("TypeDDetails");
+                            if (typeDDetails.length() > 0)
+                                new CheckPointTypeDDetail(typeDDetails.toString(), view, context);
+
+                            JSONArray noNeedVolume = jsonObject.getJSONArray("NoNeedVolume");
+                            if (noNeedVolume.length() > 0)
+                                new NoNeedVolumeReason(noNeedVolume.toString(), view, context);
+
+                            devision = jsonObject.getString("Division");
+                            dbConnections.UpdateUserDivision(devision, getWindow().getDecorView().getRootView());
+
+
+                        }
+                    } else
+                        GlobalVar.updateApp(MainPageActivity.this);
+
+                    dbConnections.close();
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            } else {
+                LoadDivisionError();
+            }
+            if (progressDialog != null && progressDialog.isShowing()) {
+                progressDialog.dismiss();
+                progressDialog = null;
+            }
+
+            LoadMenu();
 
         }
     }
+
+    private void LoadDivisionError() {
+        AlertDialog alertDialog = new AlertDialog.Builder(MainPageActivity.this).create();
+        alertDialog.setCancelable(false);
+        alertDialog.setTitle("Info.");
+        alertDialog.setMessage("Kindly Check your Internet Connection,please try again");
+        alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "OK",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        GetMasterData asynthread = new GetMasterData();
+                        StartAsyncTaskInParallel(asynthread);
+                        dialog.dismiss();
+                    }
+                });
+        alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, "Close",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        DBConnections dbConnections = new DBConnections(getApplicationContext(), null);
+                        int id = dbConnections.getMaxID(" UserMeLogin where LogoutDate is NULL ", getApplicationContext());
+                        UserMeLogin userMeLogin = new UserMeLogin(id);
+                        dbConnections.UpdateUserMeLogout(userMeLogin, getApplicationContext());
+                        finish();
+                    }
+                });
+        alertDialog.show();
+    }
+
 
     public void checkthreadalive() {
         int checkthread = 1;

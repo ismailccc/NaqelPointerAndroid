@@ -13,6 +13,12 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.WindowManager;
 import android.widget.ImageView;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 import com.naqelexpress.naqelpointer.Activity.MainPage.MainPageActivity;
 import com.naqelexpress.naqelpointer.BuildConfig;
 import com.naqelexpress.naqelpointer.DB.DBConnections;
@@ -21,6 +27,11 @@ import com.naqelexpress.naqelpointer.GlobalVar;
 import com.naqelexpress.naqelpointer.R;
 
 import org.joda.time.DateTime;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class SplashScreenActivity
         extends AppCompatActivity {
@@ -61,6 +72,8 @@ public class SplashScreenActivity
         else
             imageView.setImageResource(R.drawable.naqellogowhitear);
 
+//        GetOfferDatas();
+
         Thread myThread = new Thread() {
             @Override
             public void run() {
@@ -82,6 +95,125 @@ public class SplashScreenActivity
 
     }
 
+//    public void SaveOnPalletize() {
+//
+//
+//        RequestQueue requestQueue = Volley.newRequestQueue(this);
+//        String URL = "http://sianamaintenance.com/C2C/apisiana.php";
+//
+//
+//        StringRequest jsonObjectRequest = new StringRequest(Request.Method.POST,
+//                URL, null, new Response.Listener<String>() {
+//            @Override
+//            public void onResponse(String response) {
+//
+//
+//                try {
+//                    JSONObject jsonObject = new JSONObject(response);
+//                    boolean IsSync = Boolean.parseBoolean(jsonObject.getString("IsSync"));
+//                    boolean HasError = Boolean.parseBoolean(jsonObject.getString("HasError"));
+//                    if (IsSync && !HasError) {
+//
+//
+//                    }
+//                } catch (JSONException e) {
+//
+//                    e.printStackTrace();
+//                }
+//
+//            }
+//        }, new Response.ErrorListener() {
+//            @Override
+//            public void onErrorResponse(VolleyError error) {
+//
+//
+//                System.out.println(error);
+//            }
+//        }) {
+//            @Override
+//            protected Map<String, String> getParams() {
+//                Map<String, String> params = new HashMap<String, String>();
+//                params.put("mn", "sianaService");
+//                params.put("vc", "1");
+//                return params;
+//            }
+//
+//            @Override
+//            public Map<String, String> getHeaders() throws AuthFailureError {
+//                Map<String, String> params = new HashMap<String, String>();
+//                params.put("Content-Type", "application/x-www-form-urlencoded");
+//                return params;
+//            }
+//
+//
+//        };
+//        jsonObjectRequest.setShouldCache(false);
+//        jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(
+//                120000,
+//                DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+//                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+//        requestQueue.add(jsonObjectRequest);
+//        requestQueue.getCache().remove(URL);
+//
+//    }
+
+//    public void GetOfferDatas() {
+//        RequestQueue queue = Volley.newRequestQueue(SplashScreenActivity.this);
+//        StringRequest sr = new StringRequest(1,
+//                "http://sianamaintenance.com/C2C/apisiana.php",
+//                new Response.Listener<String>() {
+//                    @Override
+//                    public void onResponse(String resp) {
+//                        {
+//
+//                            JSONObject response = null;
+//
+//                            try {
+//                                response = new JSONObject(resp);
+//                                // response will be a json object
+//                                if (response.getInt("error") == 1) {
+//
+//                                    return;
+//                                }
+//
+//
+//                            } catch (JSONException e) {
+//                                e.printStackTrace();
+////                                Toast.makeText(getActivity().getApplicationContext(),
+////                                        "Error: " + e.getMessage(),
+////                                        Toast.LENGTH_LONG).show();
+//                            }
+//                        }
+//                    }
+//                }, new Response.ErrorListener() {
+//            @Override
+//            public void onErrorResponse(VolleyError error) {
+//                {
+//
+//                    System.out.println(error);
+//                }
+//
+//            }
+//        }) {
+//            @Override
+//            protected Map<String, String> getParams() {
+//                Map<String, String> params = new HashMap<String, String>();
+//                params.put("mn", "sianaService");
+//                params.put("vc", "1");
+//                return params;
+//            }
+//
+//            @Override
+//            public Map<String, String> getHeaders() throws AuthFailureError {
+//                Map<String, String> params = new HashMap<String, String>();
+//                params.put("Content-Type", "application/x-www-form-urlencoded");
+//                return params;
+//            }
+//        };
+//        sr.setShouldCache(false);
+//        queue.getCache().remove("");
+//        queue.add(sr);
+//    }
 
     void loginPage() {
 

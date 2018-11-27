@@ -49,7 +49,7 @@ import java.util.Date;
 
 public class DBConnections
         extends SQLiteOpenHelper {
-    private static final int Version = 18;
+    private static final int Version = 20;
     private static final String DBName = "NaqelPointerDB.db";
     public Context context;
     public View rootView;
@@ -70,7 +70,10 @@ public class DBConnections
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        db.execSQL("CREATE TABLE IF NOT EXISTS \"UserME\" (\"ID\" INTEGER PRIMARY KEY  NOT NULL  UNIQUE , \"EmployID\" INTEGER NOT NULL , \"Password\" TEXT NOT NULL, \"StationID\" INTEGER NOT NULL , \"RoleMEID\" INTEGER, \"StatusID\" INTEGER NOT NULL, \"MachineID\" TEXT,  \"EmployName\" TEXT, \"EmployFName\" TEXT, \"MobileNo\" TEXT, \"StationCode\" TEXT, \"StationName\" TEXT, \"StationFName\" TEXT)");
+        db.execSQL("CREATE TABLE IF NOT EXISTS \"UserME\" (\"ID\" INTEGER PRIMARY KEY  NOT NULL  UNIQUE , \"EmployID\" INTEGER NOT NULL" +
+                " , \"Password\" TEXT NOT NULL, \"StationID\" INTEGER NOT NULL , \"RoleMEID\" INTEGER, \"StatusID\" INTEGER NOT NULL," +
+                " \"MachineID\" TEXT,  \"EmployName\" TEXT, \"EmployFName\" TEXT, \"MobileNo\" TEXT, \"StationCode\" TEXT, " +
+                "\"StationName\" TEXT, \"StationFName\" TEXT,\"Division\" TEXT DEFAULT 0 )");
         db.execSQL("CREATE TABLE IF NOT EXISTS \"UserLogs\" (\"ID\" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL UNIQUE , \"UserID\" INTEGER NOT NULL , \"SuperVisorID\" INTEGER NOT NULL, \"IsSync\" BOOL NOT NULL , \"LogTypeID\" INTEGER NOT NULL , \"CTime\" DATETIME NOT NULL , \"MachineID\" TEXT , \"Remarks\" TEXT)");
         db.execSQL("CREATE TABLE IF NOT EXISTS \"UserMeLogin\" (\"ID\" INTEGER PRIMARY KEY AUTOINCREMENT  NOT NULL  UNIQUE , \"EmployID\" INTEGER NOT NULL , \"StateID\" INTEGER NOT NULL , \"Date\" DATETIME NOT NULL  DEFAULT CURRENT_TIMESTAMP, \"HHDName\" TEXT check(typeof(\"HHDName\") = 'text') , \"Version\" TEXT NOT NULL  check(typeof(\"Version\") = 'text') , \"IsSync\" BOOL NOT NULL , \"TruckID\" INTEGER , \"LogoutDate\" DATETIME , \"LogedOut\" BOOL )");
         db.execSQL("CREATE TABLE IF NOT EXISTS \"OnDelivery\" (\"ID\" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL , " +
@@ -268,7 +271,8 @@ public class DBConnections
                 db.execSQL("ALTER TABLE MyRouteShipments ADD COLUMN PiecesCount TEXT");
             if (!isColumnExist("MyRouteShipments", "Sign"))
                 db.execSQL("ALTER TABLE MyRouteShipments ADD COLUMN Sign INTEGER DEFAULT 0");
-
+            if (!isColumnExist("UserME", "Division"))
+                db.execSQL("ALTER TABLE UserME ADD COLUMN Division TEXT DEFAULT 0 ");
         }
 
 
@@ -430,6 +434,7 @@ public class DBConnections
             contentValues.put("StationCode", instance.StationCode);
             contentValues.put("StationName", instance.StationName);
             contentValues.put("StationFName", instance.StationFName);
+            contentValues.put("Division", instance.Division);
 
             result = db.insert("UserME", null, contentValues);
             db.close();
@@ -465,6 +470,23 @@ public class DBConnections
         }
         return result != -1;
     }
+
+    public boolean UpdateUserDivision(String division, View view) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues contentValues = new ContentValues();
+        //Put the filed which you want to update.
+        contentValues.put("Division", division);
+        try {
+            String args[] = {String.valueOf(GlobalVar.GV().EmployID)};
+            db.update("UserME", contentValues, "EmployID=?", args);
+        } catch (Exception e) {
+            GlobalVar.GV().ShowSnackbar(view, e.getMessage(), GlobalVar.AlertType.Error);
+            return false;
+        }
+        db.close();
+        return true;
+    }
+
 
     public boolean UpdateUserMeLogin(UserMeLogin instance) {
         SQLiteDatabase db = this.getWritableDatabase();
@@ -741,6 +763,17 @@ public class DBConnections
 
     }
 
+    public void deleteAllStation() {
+        try {
+            SQLiteDatabase db = SQLiteDatabase.openDatabase(context.getDatabasePath(DBName).getPath(), null, SQLiteDatabase.NO_LOCALIZED_COLLATORS | SQLiteDatabase.OPEN_READWRITE);
+
+            db.execSQL("delete from Station");
+            db.close();
+        } catch (SQLiteException e) {
+
+        }
+    }
+
     //---------------------------------Not Delivery Table-------------------------------
     public boolean InsertNotDelivered(NotDelivered intstance, Context context) {
 
@@ -846,6 +879,18 @@ public class DBConnections
 
     }
 
+    public void deleteAllDeliveryStatus() {
+        try {
+            SQLiteDatabase db = SQLiteDatabase.openDatabase(context.getDatabasePath(DBName).getPath(), null, SQLiteDatabase.NO_LOCALIZED_COLLATORS | SQLiteDatabase.OPEN_READWRITE);
+
+            db.execSQL("delete from DeliveryStatus");
+            db.close();
+        } catch (SQLiteException e) {
+
+        }
+    }
+
+
     //---------------------------------No Need Volume Reason Table-------------------------------
     public boolean InsertVolumeReason(NoNeedVolumeReason instance, Context context) {
         long result = 0;
@@ -878,6 +923,17 @@ public class DBConnections
 
         }
 
+    }
+
+    public void deleteAllVolumeReason() {
+        try {
+            SQLiteDatabase db = SQLiteDatabase.openDatabase(context.getDatabasePath(DBName).getPath(), null, SQLiteDatabase.NO_LOCALIZED_COLLATORS | SQLiteDatabase.OPEN_READWRITE);
+
+            db.execSQL("delete from NoNeedVolumeReason");
+            db.close();
+        } catch (SQLiteException e) {
+
+        }
     }
 
     //---------------------------------Check Point Table-------------------------------
@@ -963,6 +1019,17 @@ public class DBConnections
         }
     }
 
+    public void deleteAllCheckpoint() {
+        try {
+            SQLiteDatabase db = SQLiteDatabase.openDatabase(context.getDatabasePath(DBName).getPath(), null, SQLiteDatabase.NO_LOCALIZED_COLLATORS | SQLiteDatabase.OPEN_READWRITE);
+
+            db.execSQL("delete from CheckPointType");
+            db.close();
+        } catch (SQLiteException e) {
+
+        }
+    }
+
     //---------------------------------Check Point Type Detail Table-------------------------------
     public boolean InsertCheckPointTypeDetail(CheckPointTypeDetail instance, Context context) {
         long result = 0;
@@ -1003,6 +1070,17 @@ public class DBConnections
             } catch (Exception e) {
                 GlobalVar.GV().ShowSnackbar(view, e.getMessage(), GlobalVar.AlertType.Error);
             }
+            db.close();
+        } catch (SQLiteException e) {
+
+        }
+    }
+
+    public void deleteAllCheckPointTypeDetail() {
+        try {
+            SQLiteDatabase db = SQLiteDatabase.openDatabase(context.getDatabasePath(DBName).getPath(), null, SQLiteDatabase.NO_LOCALIZED_COLLATORS | SQLiteDatabase.OPEN_READWRITE);
+
+            db.execSQL("delete from CheckPointTypeDetail");
             db.close();
         } catch (SQLiteException e) {
 
@@ -1051,6 +1129,17 @@ public class DBConnections
             } catch (Exception e) {
                 GlobalVar.GV().ShowSnackbar(view, e.getMessage(), GlobalVar.AlertType.Error);
             }
+            db.close();
+        } catch (SQLiteException e) {
+
+        }
+    }
+
+    public void deleteAllCheckPointTypeDDetail() {
+        try {
+            SQLiteDatabase db = SQLiteDatabase.openDatabase(context.getDatabasePath(DBName).getPath(), null, SQLiteDatabase.NO_LOCALIZED_COLLATORS | SQLiteDatabase.OPEN_READWRITE);
+
+            db.execSQL("delete from CheckPointTypeDDetail");
             db.close();
         } catch (SQLiteException e) {
 

@@ -30,7 +30,6 @@ public class CheckPointType {
     }
 
 
-
     public CheckPointType(String finalJson, View view, Context context) {
 
         try {
@@ -38,29 +37,32 @@ public class CheckPointType {
             JSONArray jsonArray = new JSONArray(finalJson);
             if (jsonArray.length() > 0) {
                 //Delete the existing reasons
-                Cursor result = dbConnections.Fill("select * from CheckPointType",context);
-                if (result.getCount() > 0) {
-                    result.moveToFirst();
-                    do {
-                        dbConnections.deleteCheckPointType(Integer.parseInt(result.getString(result.getColumnIndex("ID"))),view,context);
+                Cursor result = dbConnections.Fill("select * from CheckPointType", context);
+                if (result.getCount() < jsonArray.length() || result.getCount() > jsonArray.length()) {
+                    if (result.getCount() > 0) {
+//                        result.moveToFirst();
+//                        do {
+//                            dbConnections.deleteCheckPointType(Integer.parseInt(result.getString(result.getColumnIndex("ID"))), view, context);
+//                        }
+//                        while (result.moveToNext());
+                        dbConnections.deleteAllCheckpoint();
                     }
-                    while (result.moveToNext());
+                }
+
+                for (int i = 0; i < jsonArray.length(); i++) {
+                    JSONObject jsonObject = jsonArray.getJSONObject(i);
+                    CheckPointType instance = new CheckPointType();
+                    try {
+                        instance.ID = Integer.parseInt(jsonObject.getString("ID"));
+                        instance.Name = jsonObject.getString("Name");
+                        instance.FName = jsonObject.getString("FName");
+
+                        dbConnections.InsertCheckPointType(instance, context);
+                    } catch (JSONException ignored) {
+                    }
                 }
             }
-
-            for (int i = 0; i < jsonArray.length(); i++) {
-                JSONObject jsonObject = jsonArray.getJSONObject(i);
-                CheckPointType instance = new CheckPointType();
-                try {
-                    instance.ID = Integer.parseInt(jsonObject.getString("ID"));
-                    instance.Name = jsonObject.getString("Name");
-                    instance.FName = jsonObject.getString("FName");
-
-                    dbConnections.InsertCheckPointType(instance,context);
-                } catch (JSONException ignored) {
-                }
-            }
-            GlobalVar.GV().GetCheckPointTypeList(false, context, view);
+           // GlobalVar.GV().GetCheckPointTypeList(false, context, view);
             dbConnections.close();
         } catch (JSONException ignored) {
         }
