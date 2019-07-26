@@ -1,8 +1,10 @@
-package com.naqelexpress.naqelpointer.Activity.Delivery;
+package com.naqelexpress.naqelpointer.Activity.DigitalSign;
 
+import android.Manifest;
 import android.app.ActivityManager;
 import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -14,26 +16,21 @@ import android.graphics.RectF;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.Fragment;
-import android.text.Editable;
-import android.text.TextWatcher;
+import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AppCompatActivity;
 import android.util.AttributeSet;
+import android.util.DisplayMetrics;
 import android.util.Log;
-import android.view.LayoutInflater;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.LinearLayout;
-import android.widget.TextView;
 import android.widget.Toast;
 
-import com.naqelexpress.naqelpointer.Activity.DigitalSign.Signature;
 import com.naqelexpress.naqelpointer.BuildConfig;
 import com.naqelexpress.naqelpointer.DB.DBConnections;
 import com.naqelexpress.naqelpointer.GlobalVar;
@@ -42,17 +39,9 @@ import com.naqelexpress.naqelpointer.R;
 import java.io.File;
 import java.io.FileOutputStream;
 
-import static android.app.Activity.RESULT_OK;
+public class Signature extends AppCompatActivity {
 
-public class DeliverySecondFragment extends Fragment implements TextWatcher {
 
-    View rootView;
-    EditText txtPOS;
-    EditText txtCash;
-    TextView lbTotal;
-    public EditText txtReceiverName;
-
-    //Added by Ismail
     Button btn_get_sign, mClear, mGetSign, mCancel;
 
     File file;
@@ -65,66 +54,88 @@ public class DeliverySecondFragment extends Fragment implements TextWatcher {
     // Creating Separate Directory for saving Generated Images
     String DIRECTORY = Environment.getExternalStorageDirectory().getPath() + "/NaqelSignature/";
     //String pic_name = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date());
-    String StoredPath = "";
-    int signmand = 0;
+    // String pic_name = "1234567";
+    //String StoredPath = DIRECTORY + pic_name + ".png";
 
+    String StoredPath = "";
+    String imagename = "";
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        if (rootView == null) {
-            rootView = inflater.inflate(R.layout.deliverysecondfragment, container, false);
+    protected void onCreate(Bundle savedInstanceState) {
 
-            txtPOS = (EditText) rootView.findViewById(R.id.txtPOSAmount);
-            txtCash = (EditText) rootView.findViewById(R.id.txtCashAmount);
-            lbTotal = (TextView) rootView.findViewById(R.id.lbTotal);
-            txtReceiverName = (EditText) rootView.findViewById(R.id.txtCheckPointType);
+        //setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+        super.onCreate(savedInstanceState);
 
-            txtPOS.addTextChangedListener(this);
-            txtCash.addTextChangedListener(this);
+        setContentView(R.layout.signature);
 
-            signmand = 0;
+        LinearLayout transparent = (LinearLayout) findViewById(R.id.bg);
 
-            Button btn_get_sign = (Button) rootView.findViewById(R.id.signature);
+        Bundle bundle = getIntent().getExtras();
+        StoredPath = bundle.getString("path");
+        imagename = bundle.getString("imagename");
 
-            btn_get_sign.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
+        //transparent.getBackground().setAlpha(128);
+        //transparent.setDr
+        //transparent.setAlpha(0.5f);
 
-                    DeliveryFirstFragment firstFragment = new DeliveryFirstFragment();
-                    String waybill = DeliveryFirstFragment.txtWaybillNo.getText().toString().replace(" ", "");
+        //this.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK));
 
-                    StoredPath = DIRECTORY + waybill + ".png";
+        // Button to open signature panel
+        btn_get_sign = (Button) findViewById(R.id.signature);
 
-                    if (waybill.length() > 0) {
-                        Intent in = new Intent(getActivity(), Signature.class);
-                        in.putExtra("path", DIRECTORY);
-                        in.putExtra("imagename", waybill + ".png");
-                        startActivityForResult(in, 1);
-                    } else
-                        GlobalVar.GV().ShowSnackbar(rootView, getString(R.string.validwaybill), GlobalVar.AlertType.Warning);
-
-
-                }
-            });
-
-            file = new File(DIRECTORY);
-            if (!file.exists()) {
-                file.mkdirs();
-            }
-
-            // Dialog Function
-            dialog = new Dialog(getActivity());
-            // Removing the features of Normal Dialogs
-
-            dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-            dialog.setContentView(R.layout.dialog_signature);
-            dialog.setCancelable(true);
-
-
+        // Method to create Directory, if the Directory doesn't exists
+        file = new File(DIRECTORY);
+        if (!file.exists()) {
+            file.mkdirs();
         }
-        return rootView;
+
+        // Dialog Function
+        dialog = new Dialog(Signature.this);
+        // Removing the features of Normal Dialogs
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setContentView(R.layout.dialog_signature);
+        dialog.setCancelable(true);
+        dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+
+        //Read Permission for Access Folder
+        readPermission();
+
+        btn_get_sign.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Function call for Digital Signature
+                //readPermission();
+
+            }
+        });
+        //this.onBackPressed();
+
     }
 
+
+    private void readPermission() {
+        int permissionCamera = ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.READ_EXTERNAL_STORAGE);
+        if (permissionCamera == PackageManager.PERMISSION_GRANTED) {
+            permissionCamera = ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE);
+            if (permissionCamera == PackageManager.PERMISSION_GRANTED) {
+                dialog_action();
+            } else {
+
+                ActivityCompat.requestPermissions(Signature.this,
+                        new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                        1);
+
+            }
+
+
+        } else {
+
+            ActivityCompat.requestPermissions(Signature.this,
+                    new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                    1);
+
+        }
+    }
 
     @Override
     public void onRequestPermissionsResult(int requestCode,
@@ -135,36 +146,51 @@ public class DeliverySecondFragment extends Fragment implements TextWatcher {
                 // If request is cancelled, the result arrays are empty.
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    dialog_action();
+                    int permissionCamera = ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE);
+                    if (permissionCamera == PackageManager.PERMISSION_GRANTED)
+                        dialog_action();
+                    else
+                        ActivityCompat.requestPermissions(Signature.this,
+                                new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                                1);
 
                 } else {
 
-                    // permission denied, boo! Disable the
-                    // functionality that depends on this permission.
-                    boolean deniedPermission = ActivityCompat.shouldShowRequestPermissionRationale(getActivity(), permissions[0]);
-                    if (!deniedPermission) {
+                    boolean deniedPermission = ActivityCompat.shouldShowRequestPermissionRationale(this, permissions[0]);
+                    if (deniedPermission) {
                         try {
                             Intent i = new Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + BuildConfig.APPLICATION_ID));
                             startActivity(i);
                         } catch (Exception e) {
-                            GlobalVar.ShowDialog(getContext(), "STORAGE Permission necessary", "Kindly please contact our Admin", true);
+                            GlobalVar.ShowDialog(Signature.this, "Storage Permission necessary", "Kindly please contact our Admin", true);
                         }
+                        finish();
                     }
+
                 }
                 return;
             }
 
+            // other 'case' lines to check for other
+            // permissions this app might request
         }
     }
 
     // Function for Digital Signature
+
     public void dialog_action() {
 
         mContent = (LinearLayout) dialog.findViewById(R.id.linearLayout);
-        mSignature = new signature(getActivity().getApplicationContext(), null);
+        mSignature = new signature(getApplicationContext(), null);
         mSignature.setBackgroundColor(Color.WHITE);
+
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        int height = displayMetrics.heightPixels;
+        int width = displayMetrics.widthPixels;
+
         // Dynamically generating Layout through java code
-        mContent.addView(mSignature, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+        mContent.addView(mSignature, width, ViewGroup.LayoutParams.MATCH_PARENT);
         mClear = (Button) dialog.findViewById(R.id.clear);
         mGetSign = (Button) dialog.findViewById(R.id.getsign);
         mGetSign.setEnabled(false);
@@ -176,6 +202,7 @@ public class DeliverySecondFragment extends Fragment implements TextWatcher {
                 Log.v("log_tag", "Panel Cleared");
                 mSignature.clear();
                 mGetSign.setEnabled(false);
+                recreate();
             }
         });
 
@@ -183,40 +210,61 @@ public class DeliverySecondFragment extends Fragment implements TextWatcher {
 
             public void onClick(View v) {
 
-                DBConnections dbh = new DBConnections(getActivity().getApplicationContext(), null);
-                boolean validate = dbh.inserSignaturetData(StoredPath, String.valueOf(GlobalVar.GV().EmployID), getContext());
-
+                DBConnections dbh = new DBConnections(getApplicationContext(), null);
+                boolean validate = dbh.inserSignaturetData(StoredPath + imagename, String.valueOf(GlobalVar.GV().EmployID), getApplicationContext());
                 if (validate) {
-                    //getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
                     Log.v("log_tag", "Panel Saved");
                     view.setDrawingCacheEnabled(true);
                     mSignature.save(view, StoredPath);
+
+                    Toast.makeText(getApplicationContext(), "Successfully Saved", Toast.LENGTH_SHORT).show();
                     dialog.dismiss();
 
-                    Toast.makeText(getActivity().getApplicationContext(), "Successfully Saved", Toast.LENGTH_SHORT).show();
+                    Intent intent = new Intent();
+                    intent.putExtra("sign", 1);
+                    setResult(RESULT_OK, intent);
+
+
                     // Calling the same class
                     //recreate();
 
                     if (!isMyServiceRunning(com.naqelexpress.naqelpointer.service.signature.class)) {
-                        getActivity().startService(
-                                new Intent(getActivity(),
+                        startService(
+                                new Intent(Signature.this,
                                         com.naqelexpress.naqelpointer.service.signature.class));
                     }
+                    finish();
                 } else
-                    Toast.makeText(getActivity().getApplicationContext(), "Not Saved", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(), "Not Saved", Toast.LENGTH_SHORT).show();
 
             }
         });
 
         mCancel.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                //  getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
                 Log.v("log_tag", "Panel Canceled");
                 dialog.dismiss();
+                finish();
                 // Calling the same class
-                getActivity().recreate();
+
             }
         });
+
+        dialog.setOnKeyListener(new Dialog.OnKeyListener() {
+
+            @Override
+            public boolean onKey(DialogInterface arg0, int keyCode,
+                                 KeyEvent event) {
+                // TODO Auto-generated method stub
+                if (keyCode == KeyEvent.KEYCODE_BACK) {
+
+                    dialog.dismiss();
+                    finish();
+                }
+                return true;
+            }
+        });
+
         dialog.show();
     }
 
@@ -248,8 +296,9 @@ public class DeliverySecondFragment extends Fragment implements TextWatcher {
             }
             Canvas canvas = new Canvas(bitmap);
             try {
+                File output = new File(StoredPath, imagename);
                 // Output the file
-                FileOutputStream mFileOutStream = new FileOutputStream(StoredPath);
+                FileOutputStream mFileOutStream = new FileOutputStream(output);
                 v.draw(canvas);
 
                 // Convert the output file to Image such as .png
@@ -347,7 +396,7 @@ public class DeliverySecondFragment extends Fragment implements TextWatcher {
 
 
     private boolean isMyServiceRunning(Class<?> serviceClass) {
-        ActivityManager manager = (ActivityManager) getActivity().getApplication()
+        ActivityManager manager = (ActivityManager) getApplication()
                 .getSystemService(Context.ACTIVITY_SERVICE);
         for (ActivityManager.RunningServiceInfo service : manager
                 .getRunningServices(Integer.MAX_VALUE)) {
@@ -358,71 +407,11 @@ public class DeliverySecondFragment extends Fragment implements TextWatcher {
         return false;
     }
 
-    @Override
-    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-    }
 
     @Override
-    public void onTextChanged(CharSequence s, int start, int before, int count) {
+    public void onBackPressed() {
+        dialog.dismiss();
+        finish();
     }
 
-    @Override
-    public void afterTextChanged(Editable s) {
-        double pos = 0, cash = 0, Total;
-        if (txtPOS != null && txtPOS.getText().length() > 0) {
-            try {
-                pos = Double.parseDouble(txtPOS.getText().toString());
-            } catch (NumberFormatException ex) {
-            }
-        }
-        if (txtCash != null && txtCash.length() > 0) {
-            try {
-
-                cash = Double.parseDouble(txtCash.getText().toString());
-            } catch (NumberFormatException ex) {
-            }
-        }
-        Total = pos + cash;
-        lbTotal.setText(getResources().getString(R.string.TotalCollectedAmount) + String.valueOf(Total));
-    }
-
-    @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-        if (savedInstanceState != null) {
-            txtPOS.setText(savedInstanceState.getString("txtPOS"));
-            txtCash.setText(savedInstanceState.getString("txtCash"));
-            lbTotal.setText(savedInstanceState.getString("lbTotal"));
-            txtReceiverName.setText(savedInstanceState.getString("txtReceiverName"));
-            signmand = savedInstanceState.getInt("signmand");
-
-
-        }
-    }
-
-    @Override
-    public void onSaveInstanceState(@NonNull Bundle outState) {
-        super.onSaveInstanceState(outState);
-        outState.putString("txtPOS", txtPOS.getText().toString());
-        outState.putString("txtCash", txtCash.getText().toString());
-        outState.putString("lbTotal", lbTotal.getText().toString());
-        outState.putString("txtReceiverName", txtReceiverName.getText().toString());
-        outState.putInt("signmand", signmand);
-
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == 1 && resultCode == RESULT_OK) {
-            if (data != null) {
-                Bundle extras = data.getExtras();
-                if (extras != null) {
-                    if (extras.containsKey("sign")) {
-                        signmand = extras.getInt("sign");
-
-                    }
-                }
-            }
-        }
-    }
 }

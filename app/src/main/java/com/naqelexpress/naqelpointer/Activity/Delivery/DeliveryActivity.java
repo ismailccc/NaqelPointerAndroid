@@ -110,10 +110,13 @@ public class DeliveryActivity
                     // functionality that depends on this permission.
                     boolean deniedPermission = ActivityCompat.shouldShowRequestPermissionRationale(this, permissions[0]);
                     if (!deniedPermission) {
-                        Intent i = new Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + BuildConfig.APPLICATION_ID));
-                        startActivity(i);
+                        try {
+                            Intent i = new Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + BuildConfig.APPLICATION_ID));
+                            startActivity(i);
+                        } catch (Exception e) {
+                            GlobalVar.ShowDialog(DeliveryActivity.this, "Location Permission necessary", "Kindly please contact our Admin", true);
+                        }
                     }
-                    Toast.makeText(DeliveryActivity.this, "Our app need the Location Permission,please kindly allow me", Toast.LENGTH_SHORT).show();
                 }
                 return;
             }

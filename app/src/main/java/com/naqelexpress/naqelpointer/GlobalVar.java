@@ -84,6 +84,7 @@ public class GlobalVar {
     //public String NaqelPointerAPILink = "http://192.168.1.127:49981/Api/Pointer/";
     //public String NaqelPointerAPILink = "http://35.188.10.142:8001/NaqelPointer/V2/Api/Pointer/";
     public String NaqelPointerAPILink = "http://35.188.10.142:8001/NaqelPointer/V7/Api/Pointer/";
+    public String NaqelPointerLivetracking = "http://35.188.10.142:8001/NaqelPointer/V9/Home/";
 
     //public String NaqelPointerAPILink = "http://212.93.160.150/NaqelAPIServices/RouteOptimization/2.0/WCFRouteOptimization.svc/";
     //public String NaqelPointerWebAPILink = "http://212.93.160.150/NaqelAPIServices/InfoTrackWebAPI/1.0/API/";
@@ -236,7 +237,7 @@ public class GlobalVar {
         snackbar.show();
     }
 
-    public void ShowDialog(Context context, String title, String Message, boolean Cancelable) {
+    public static void ShowDialog(Context context, String title, String Message, boolean Cancelable) {
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setCancelable(Cancelable);
         builder.setTitle(title);

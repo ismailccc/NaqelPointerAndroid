@@ -52,7 +52,7 @@ public class UpdatePassword extends AppCompatActivity {
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
         ll = (LinearLayout) findViewById(R.id.ll);
-        final TextView empid = (TextView) findViewById(R.id.employid);
+        final EditText empid = (EditText) findViewById(R.id.employid);
         empid.setText(getIntent().getStringExtra("EmployID"));
         final EditText currentpwd = (EditText) findViewById(R.id.crntpwd);
         final EditText newpwd = (EditText) findViewById(R.id.newpwd);

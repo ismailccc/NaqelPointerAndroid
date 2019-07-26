@@ -318,6 +318,10 @@
             android:name="com.naqelexpress.naqelpointer.service.ArrivedatDest"
             android:process=":naqelArrivedatDest" />
 
+        <service
+            android:name="com.naqelexpress.naqelpointer.Activity.GoogleLocationFusedApi.LocationService"
+            android:enabled="true"></service>
+
 
         <receiver
             android:name="com.naqelexpress.naqelpointer.Receiver.MyReceiver"

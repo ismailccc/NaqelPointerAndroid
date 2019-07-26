@@ -417,9 +417,12 @@ public class LoginActivity
                         if (result == PackageManager.PERMISSION_DENIED) {
                             redirect = false;
                             if (!ActivityCompat.shouldShowRequestPermissionRationale(this, permissions[i])) {
-                                Intent intent = new Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + BuildConfig.APPLICATION_ID));
-                                startActivity(intent);
-                                GlobalVar.GV().ShowSnackbar(getWindow().getDecorView().getRootView(), "Our app need the those Permission,please kindly allow me", GlobalVar.AlertType.Error);
+                                try {
+                                    Intent i = new Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + BuildConfig.APPLICATION_ID));
+                                    startActivity(i);
+                                } catch (Exception e) {
+                                    GlobalVar.ShowDialog(MainPageActivity.this, "Permission necessary", "Kindly please contact our Admin", true);
+                                }
                                 break;
                             } else {
                                 ActivityCompat.requestPermissions(
@@ -445,9 +448,12 @@ public class LoginActivity
                     //  GlobalVar.AskPermission_Location(MainPageActivity.this);
                     for (int i = 0; i < permissions.length; i++) {
                         if (!ActivityCompat.shouldShowRequestPermissionRationale(this, permissions[i])) {
-                            Intent intent = new Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + BuildConfig.APPLICATION_ID));
-                            startActivity(intent);
-                            GlobalVar.GV().ShowSnackbar(getWindow().getDecorView().getRootView(), "Our app need the those Permission,please kindly allow me", GlobalVar.AlertType.Error);
+                            try {
+                                Intent i = new Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + BuildConfig.APPLICATION_ID));
+                                startActivity(i);
+                            } catch (Exception e) {
+                                GlobalVar.ShowDialog(MainPageActivity.this, "Permission necessary", "Kindly please contact our Admin", true);
+                            }
                             break;
                         }
                     }
@@ -464,9 +470,12 @@ public class LoginActivity
                 } else {
                     if (ContextCompat.checkSelfPermission(this, permissions[0]) == PackageManager.PERMISSION_DENIED) {
                         if (!ActivityCompat.shouldShowRequestPermissionRationale(this, permissions[0])) {
-                            Intent intent = new Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + BuildConfig.APPLICATION_ID));
-                            startActivity(intent);
-                            GlobalVar.GV().ShowSnackbar(getWindow().getDecorView().getRootView(), "Our app need the Phone call Permission,please kindly allow me", GlobalVar.AlertType.Error);
+                            try {
+                                Intent i = new Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + BuildConfig.APPLICATION_ID));
+                                startActivity(i);
+                            } catch (Exception e) {
+                                GlobalVar.ShowDialog(MainPageActivity.this, "Call Permission necessary", "Kindly please contact our Admin", true);
+                            }
                             // finish();
                         }
                         ActivityCompat.requestPermissions(
